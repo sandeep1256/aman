@@ -199,6 +199,8 @@ export interface StylistQuizAnswers {
   lensNeeds?: string;
 }
 
+export type AppTab = 'home' | 'catalog' | 'tryon' | 'stylist' | 'account' | 'cart' | 'admin' | 'contact';
+
 export interface UserAccount {
   uid: string;
   email: string;

@@ -14,7 +14,9 @@ import {
   ChevronDown,
   User,
   Sun,
-  Database
+  Database,
+  MapPin,
+  Phone
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { CURRENCIES } from '../../data/currencies';
@@ -57,18 +59,44 @@ export const Header: React.FC = () => {
     { code: 'bn', label: 'বাংলা', flag: 'BN' }
   ];
 
+  const [logoClickCount, setLogoClickCount] = useState(0);
+  const [lastLogoClickTime, setLastLogoClickTime] = useState(0);
+
   const handleLogoClick = () => {
+    const now = Date.now();
+    if (now - lastLogoClickTime < 700) {
+      const newCount = logoClickCount + 1;
+      if (newCount >= 4) {
+        // Owner 4-tap gesture triggers admin panel!
+        setActiveTab('admin');
+        setLogoClickCount(0);
+        return;
+      }
+      setLogoClickCount(newCount);
+    } else {
+      setLogoClickCount(1);
+    }
+    setLastLogoClickTime(now);
+
     setSelectedProductForDetail(null);
-    setActiveTab('home');
+    if (activeTab !== 'admin') {
+      setActiveTab('home');
+    }
   };
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-stone-200 text-stone-900 select-none shadow-xs">
       {/* Top micro announcement bar */}
       <div className="bg-[#F5F2ED] border-b border-stone-200/80 py-1.5 px-4 text-[10px] text-stone-600 flex items-center justify-between font-semibold tracking-widest uppercase">
-        <div className="flex items-center gap-2 truncate">
+        <div className="flex items-center gap-3 truncate">
           <span className="w-1.5 h-1.5 bg-[#D4AF37] rounded-full shrink-0"></span>
-          <span className="truncate">Aman Opticals Atelier • Code <strong className="text-stone-900 underline font-bold">AMANOPTICS</strong> for 40% VIP Privilege</span>
+          <span className="truncate">Aman Opticals • Sawai Madhopur Atelier (5.0 ★)</span>
+          <button 
+            onClick={() => setActiveTab('contact')}
+            className="hidden sm:inline text-stone-900 underline font-bold hover:text-[#c59e2b] cursor-pointer"
+          >
+            Hotline: 097856 09194
+          </button>
         </div>
         <div className="flex items-center gap-4 shrink-0">
           {/* Quick Currency Selector */}
@@ -218,6 +246,18 @@ export const Header: React.FC = () => {
             }`}
           >
             Facial Stylist
+          </button>
+          <button
+            id="header-nav-contact"
+            onClick={() => setActiveTab('contact')}
+            className={`transition-colors cursor-pointer pb-1 flex items-center gap-1.5 ${
+              activeTab === 'contact' 
+                ? 'text-stone-950 border-b-2 border-stone-950 font-black' 
+                : 'hover:text-stone-900 border-b-2 border-transparent'
+            }`}
+          >
+            <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+            <span>Store & Contact</span>
           </button>
         </nav>
 

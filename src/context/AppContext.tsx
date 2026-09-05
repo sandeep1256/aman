@@ -11,7 +11,8 @@ import {
   LensOption,
   ProductColor,
   UserAccount,
-  CategoryInfo
+  CategoryInfo,
+  AppTab
 } from '../types';
 import { translations, TranslationDictionary } from '../data/translations';
 import { PRODUCTS } from '../data/products';
@@ -59,8 +60,8 @@ interface AppContextType {
   logout: () => Promise<void>;
 
   // Navigation & Modals
-  activeTab: 'home' | 'catalog' | 'tryon' | 'stylist' | 'account' | 'cart' | 'admin';
-  setActiveTab: (tab: 'home' | 'catalog' | 'tryon' | 'stylist' | 'account' | 'cart' | 'admin') => void;
+  activeTab: AppTab;
+  setActiveTab: (tab: AppTab) => void;
   selectedProductForDetail: Product | null;
   setSelectedProductForDetail: (p: Product | null) => void;
   selectedProductForTryOn: Product | null;
@@ -156,7 +157,8 @@ const LOCAL_STORAGE_KEYS = {
   TRYONS: 'aman_opticles_tryons',
   NOTIFS: 'aman_opticles_notifs',
   PUSH_ENABLED: 'aman_opticles_push',
-  USER_CACHE: 'aman_opticles_user_cache'
+  USER_CACHE: 'aman_opticles_user_cache',
+  PRODUCTS_CACHE: 'aman_opticles_products_cache'
 };
 
 const DEFAULT_DEMO_USER: UserAccount = {
@@ -193,58 +195,92 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup' | 'forgot'>('login');
 
-  const getInitialTab = (): 'home' | 'catalog' | 'tryon' | 'stylist' | 'account' | 'cart' | 'admin' => {
+  const checkIsAdminUrl = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+    const search = window.location.search.toLowerCase();
+    return (
+      path.includes('sky-akash') ||
+      path.includes('admin') ||
+      hash.includes('sky-akash') ||
+      hash.includes('admin') ||
+      search.includes('sky-akash') ||
+      search.includes('admin')
+    );
+  };
+
+  const getInitialTab = (): AppTab => {
+    if (checkIsAdminUrl()) {
+      return 'admin';
+    }
     if (typeof window !== 'undefined') {
-      const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
-      const search = window.location.search.toLowerCase();
-      if (path.includes('sky-akash') || hash.includes('sky-akash') || search.includes('sky-akash') || search.includes('admin')) {
-        return 'admin';
-      }
+      if (hash.includes('contact')) return 'contact';
+      if (hash.includes('catalog')) return 'catalog';
+      if (hash.includes('tryon')) return 'tryon';
+      if (hash.includes('stylist')) return 'stylist';
+      if (hash.includes('account')) return 'account';
+      if (hash.includes('cart')) return 'cart';
     }
     return 'home';
   };
 
   // Navigation & Modals
-  const [activeTab, setActiveTabState] = useState<'home' | 'catalog' | 'tryon' | 'stylist' | 'account' | 'cart' | 'admin'>(getInitialTab);
+  const [activeTab, setActiveTabState] = useState<AppTab>(getInitialTab);
 
-  const setActiveTab = (tab: 'home' | 'catalog' | 'tryon' | 'stylist' | 'account' | 'cart' | 'admin') => {
+  const setActiveTab = (tab: AppTab) => {
     setActiveTabState(tab);
     if (typeof window !== 'undefined') {
       try {
         if (tab === 'admin') {
-          if (!window.location.pathname.includes('sky-akash')) {
-            window.history.pushState({ tab: 'admin' }, '', '/sky-akash');
+          if (!window.location.hash.includes('sky-akash')) {
+            window.location.hash = 'sky-akash';
+          }
+        } else if (tab === 'contact') {
+          if (!window.location.hash.includes('contact')) {
+            window.location.hash = 'contact';
           }
         } else {
-          if (window.location.pathname.includes('sky-akash')) {
-            window.history.pushState({ tab }, '', '/');
+          if (window.location.hash.includes('sky-akash') || window.location.hash.includes('admin') || window.location.hash.includes('contact')) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
           }
         }
       } catch (err) {
-        console.warn('History pushState error:', err);
+        console.warn('Navigation state error:', err);
       }
     }
   };
 
-  // Listen to browser URL changes for /sky-akash
+  // Listen to browser URL changes for /sky-akash, #sky-akash, and keyboard shortcut
   useEffect(() => {
     const handleUrlChange = () => {
-      if (typeof window !== 'undefined') {
-        const path = window.location.pathname.toLowerCase();
-        const hash = window.location.hash.toLowerCase();
-        const search = window.location.search.toLowerCase();
-        if (path.includes('sky-akash') || hash.includes('sky-akash') || search.includes('sky-akash')) {
-          setActiveTabState('admin');
-        }
+      if (checkIsAdminUrl()) {
+        setActiveTabState('admin');
+      } else if (typeof window !== 'undefined' && window.location.hash.toLowerCase().includes('contact')) {
+        setActiveTabState('contact');
+      }
+    };
+
+    // Owner shortcut: Ctrl+Shift+A or Alt+A
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) ||
+        (e.altKey && (e.key === 'A' || e.key === 'a'))
+      ) {
+        e.preventDefault();
+        setActiveTabState('admin');
+        window.location.hash = 'sky-akash';
       }
     };
 
     window.addEventListener('popstate', handleUrlChange);
     window.addEventListener('hashchange', handleUrlChange);
+    window.addEventListener('keydown', handleKeyDown);
     return () => {
       window.removeEventListener('popstate', handleUrlChange);
       window.removeEventListener('hashchange', handleUrlChange);
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, []);
   const [selectedProductForDetail, setSelectedProductForDetail] = useState<Product | null>(null);
@@ -256,7 +292,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeOrderToTrack, setActiveOrderToTrack] = useState<Order | null>(null);
 
   // Search & Catalog
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [products, setProducts] = useState<Product[]>(() => {
+    try {
+      const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.PRODUCTS_CACHE);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {}
+    return PRODUCTS;
+  });
   const [categories, setCategories] = useState<CategoryInfo[]>(CATEGORIES_DATA);
   const [dbSyncStatus, setDbSyncStatus] = useState<'synced' | 'connecting' | 'offline'>('connecting');
   const [searchQuery, setSearchQuery] = useState('');
@@ -382,6 +429,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       localStorage.removeItem(LOCAL_STORAGE_KEYS.USER_CACHE);
     }
   }, [user]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.PRODUCTS_CACHE, JSON.stringify(products));
+    } catch (err) {
+      console.warn('Error caching products:', err);
+    }
+  }, [products]);
 
   // INITIALIZE FIRESTORE DATABASE & AUTH LISTENER
   useEffect(() => {

@@ -20,7 +20,8 @@ import {
   LogOut,
   LogIn,
   Database,
-  RefreshCw
+  RefreshCw,
+  Lock
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Order, Prescription } from '../../types';
@@ -619,8 +620,22 @@ export const AccountView: React.FC = () => {
           </div>
         )}
 
+        {/* Owner / Staff Terminal Access */}
+        <div className="pt-6 pb-2 flex items-center justify-between border-t border-stone-200">
+          <div className="text-[11px] font-mono text-stone-400">
+            Internal Atelier Access
+          </div>
+          <button
+            onClick={() => setActiveTab('admin')}
+            className="text-[11px] font-mono text-stone-600 hover:text-stone-950 flex items-center gap-1.5 transition-colors cursor-pointer px-3 py-1.5 border border-stone-300 hover:border-stone-950 bg-stone-50"
+          >
+            <Lock className="w-3 h-3 text-[#D4AF37]" />
+            <span>Store Owner & Staff Terminal</span>
+          </button>
+        </div>
+
         {/* Optical Assurance Guarantee Footer */}
-        <div className="pt-8 border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-stone-500 text-xs font-mono">
+        <div className="pt-4 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-stone-500 text-xs font-mono">
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
             <span>Aman Opticles Atelier • 100% Precision Optical Grade Surfacing</span>

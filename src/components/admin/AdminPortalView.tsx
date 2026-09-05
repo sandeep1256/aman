@@ -85,67 +85,77 @@ export const AdminPortalView: React.FC = () => {
 
     setIsVerifying(true);
 
+    // 1. Instant Client-Side Verification (Primary for GitHub Pages / Static Hosting)
+    const customLocalKey = localStorage.getItem(CUSTOM_KEY_STORAGE);
+    const validClientKeys = [
+      customLocalKey,
+      'Akash@2026',
+      '789012',
+      'akash',
+      'Akash@123',
+      'admin'
+    ].filter(Boolean) as string[];
+
+    const matchesClientKey = validClientKeys.some(
+      key => key.trim().toLowerCase() === cleanInput.toLowerCase()
+    );
+
+    if (matchesClientKey) {
+      setIsAuthenticated(true);
+      try {
+        sessionStorage.setItem(ADMIN_STORAGE_KEY, 'true');
+        sessionStorage.setItem(ADMIN_TOKEN_KEY, 'verified_client_session');
+      } catch (err) {
+        console.warn('Session storage error:', err);
+      }
+      setInputPasskey('');
+      setErrorMessage(null);
+      setFailedAttempts(0);
+      setIsVerifying(false);
+      return;
+    }
+
+    // 2. Secondary Backend Verification (for full-stack Express deployments)
     try {
-      // 1. First attempt secure backend API verification
       const response = await fetch('/api/admin/verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ passkey: cleanInput })
       });
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        setIsAuthenticated(true);
-        try {
-          sessionStorage.setItem(ADMIN_STORAGE_KEY, 'true');
-          sessionStorage.setItem(ADMIN_TOKEN_KEY, data.token || 'valid');
-        } catch (err) {
-          console.warn('Session storage error:', err);
-        }
-        setInputPasskey('');
-        setErrorMessage(null);
-        setFailedAttempts(0);
-        return;
-      } else {
-        // Check if custom key was set locally as fallback
-        const customLocalKey = localStorage.getItem(CUSTOM_KEY_STORAGE);
-        if (customLocalKey && cleanInput === customLocalKey) {
+      if (response.ok) {
+        const data = await response.json().catch(() => ({}));
+        if (data && data.success) {
           setIsAuthenticated(true);
-          sessionStorage.setItem(ADMIN_STORAGE_KEY, 'true');
+          try {
+            sessionStorage.setItem(ADMIN_STORAGE_KEY, 'true');
+            sessionStorage.setItem(ADMIN_TOKEN_KEY, data.token || 'verified_token');
+          } catch (err) {
+            console.warn('Session storage error:', err);
+          }
           setInputPasskey('');
           setErrorMessage(null);
           setFailedAttempts(0);
           return;
         }
-
-        const nextFailures = failedAttempts + 1;
-        setFailedAttempts(nextFailures);
-
-        if (nextFailures >= 5 || response.status === 429) {
-          setIsLockedOut(true);
-          setLockoutTimer(45);
-          setErrorMessage('Access locked due to repeated invalid attempts.');
-        } else {
-          setErrorMessage(data.error || 'Access Denied: Invalid Administrative Passkey.');
-        }
       }
-    } catch (err) {
-      // Fallback local check in offline/container dev environment
-      const customLocalKey = localStorage.getItem(CUSTOM_KEY_STORAGE);
-      if (cleanInput === (customLocalKey || 'Akash@2026') || cleanInput === '789012' || cleanInput.toLowerCase() === 'akash') {
-        setIsAuthenticated(true);
-        sessionStorage.setItem(ADMIN_STORAGE_KEY, 'true');
-        setInputPasskey('');
-        setErrorMessage(null);
-        setFailedAttempts(0);
-      } else {
-        const nextFailures = failedAttempts + 1;
-        setFailedAttempts(nextFailures);
-        setErrorMessage(`Invalid Passkey. (${5 - nextFailures} attempts remaining)`);
-      }
+    } catch (networkErr) {
+      // Backend not running (GitHub Pages, Netlify static, etc.)
+      console.info('Running in static deployment mode:', networkErr);
     } finally {
       setIsVerifying(false);
+    }
+
+    // 3. If neither matched, register invalid attempt
+    const nextFailures = failedAttempts + 1;
+    setFailedAttempts(nextFailures);
+
+    if (nextFailures >= 5) {
+      setIsLockedOut(true);
+      setLockoutTimer(45);
+      setErrorMessage('Access locked due to repeated invalid attempts.');
+    } else {
+      setErrorMessage(`Invalid Passkey. Default key is Akash@2026 (${5 - nextFailures} attempts remaining)`);
     }
   };
 
@@ -243,6 +253,19 @@ export const AdminPortalView: React.FC = () => {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-stone-500 hover:text-stone-300 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-between mt-1.5 px-0.5">
+                  <span className="text-[10px] font-mono text-stone-500">
+                    Default Master Passkey: <code className="text-stone-300 select-all font-bold">Akash@2026</code>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setInputPasskey('Akash@2026')}
+                    className="text-[10px] font-mono text-[#D4AF37] hover:underline cursor-pointer"
+                  >
+                    Fill Key
                   </button>
                 </div>
               </div>

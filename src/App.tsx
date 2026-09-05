@@ -16,6 +16,8 @@ import { AIStylistAdvisor } from './components/stylist/AIStylistAdvisor';
 import { CartView } from './components/cart/CartView';
 import { AccountView } from './components/account/AccountView';
 import { AdminPortalView } from './components/admin/AdminPortalView';
+import { ContactView } from './components/contact/ContactView';
+import { Footer } from './components/common/Footer';
 import { ProductDetailModal } from './components/modals/ProductDetailModal';
 import { LensCustomizerModal } from './components/modals/LensCustomizerModal';
 import { PDToolModal } from './components/modals/PDToolModal';
@@ -41,8 +43,12 @@ const MainAppContent: React.FC = () => {
         {activeTab === 'stylist' && <AIStylistAdvisor />}
         {activeTab === 'cart' && <CartView />}
         {activeTab === 'account' && <AccountView />}
+        {activeTab === 'contact' && <ContactView />}
         {activeTab === 'admin' && <AdminPortalView />}
       </main>
+
+      {/* Global Luxury Atelier Footer */}
+      {activeTab !== 'admin' && <Footer />}
 
       {/* Interactive Global Modals */}
       <ProductDetailModal />

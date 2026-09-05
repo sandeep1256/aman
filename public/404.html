@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Aman Opticles — Optical Atelier</title>
+  <script>
+    (function() {
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var hash = window.location.hash;
+      
+      var isAdmin = 
+        path.indexOf('sky-akash') !== -1 || 
+        path.indexOf('admin') !== -1 || 
+        search.indexOf('admin') !== -1 || 
+        search.indexOf('sky-akash') !== -1 ||
+        hash.indexOf('sky-akash') !== -1 ||
+        hash.indexOf('admin') !== -1;
+      
+      var segments = path.split('/').filter(Boolean);
+      var basePath = '/';
+      if (segments.length > 0) {
+        if (segments[0] !== 'sky-akash' && segments[0] !== 'admin') {
+          basePath = '/' + segments[0] + '/';
+        }
+      }
+      
+      var target = basePath + (isAdmin ? '#sky-akash' : '');
+      window.location.replace(target);
+    })();
+  </script>
+</head>
+<body style="font-family: sans-serif; background: #F5F2ED; color: #1c1917; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0;">
+  <div style="text-align: center;">
+    <h2 style="font-family: serif; letter-spacing: 1.5px; font-size: 20px;">AMAN OPTICLES</h2>
+    <p style="font-size: 13px; color: #78716c; font-family: monospace;">Routing to Optical Atelier Terminal...</p>
+  </div>
+</body>
+</html>
