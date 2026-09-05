@@ -17,6 +17,8 @@ import { useApp } from '../../context/AppContext';
 import { LENS_OPTIONS } from '../../data/lenses';
 import { LensOption, ProductColor, Prescription } from '../../types';
 import { formatPrice } from '../../data/currencies';
+import { PrescriptionSlipUploader, UploadedSlipData } from '../common/PrescriptionSlipUploader';
+import { DoctorSlipViewerModal } from '../common/DoctorSlipViewerModal';
 
 export const LensCustomizerModal: React.FC = () => {
   const { 
@@ -55,7 +57,7 @@ export const LensCustomizerModal: React.FC = () => {
   const [leftAdd, setLeftAdd] = useState('+1.50');
 
   const [pdValue, setPdValue] = useState<number>(63);
-  const [uploadedPrescFile, setUploadedPrescFile] = useState<string | null>(null);
+  const [uploadedSlip, setUploadedSlip] = useState<UploadedSlipData | null>(null);
 
   if (!product) return null;
 
@@ -67,7 +69,13 @@ export const LensCustomizerModal: React.FC = () => {
       rightEye: { sph: rightSph, cyl: rightCyl, axis: rightAxis, add: rightAdd },
       leftEye: { sph: leftSph, cyl: leftCyl, axis: leftAxis, add: leftAdd },
       pd: pdValue,
-      prescriptionFileUrl: uploadedPrescFile || undefined,
+      prescriptionFileUrl: uploadedSlip?.fileUrl || undefined,
+      prescriptionFileName: uploadedSlip?.fileName,
+      prescriptionFileType: uploadedSlip?.fileType,
+      prescriptionFileSize: uploadedSlip?.fileSize,
+      doctorName: uploadedSlip?.doctorName,
+      clinicName: uploadedSlip?.clinicName,
+      notes: uploadedSlip?.notes,
       date: new Date().toLocaleDateString()
     };
 
@@ -211,11 +219,14 @@ export const LensCustomizerModal: React.FC = () => {
                   </button>
                   <button
                     onClick={() => setPrescriptionMode('upload')}
-                    className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase cursor-pointer ${
+                    className={`px-2.5 py-1 text-[10px] font-mono font-bold uppercase cursor-pointer flex items-center gap-1.5 ${
                       prescriptionMode === 'upload' ? 'bg-stone-950 text-white' : 'text-stone-600 hover:text-stone-950'
                     }`}
                   >
-                    Upload Slip
+                    <span>Upload Slip (Image/PDF)</span>
+                    {uploadedSlip && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    )}
                   </button>
                   {prescriptions.length > 0 && (
                     <button
@@ -328,30 +339,38 @@ export const LensCustomizerModal: React.FC = () => {
 
               {/* UPLOAD SLIP MODE */}
               {prescriptionMode === 'upload' && (
-                <div className="p-6 border-2 border-dashed border-stone-300 hover:border-stone-950 text-center space-y-2 bg-white transition-colors">
-                  <Upload className="w-8 h-8 mx-auto text-[#D4AF37]" />
-                  <div className="font-serif font-bold text-xs text-stone-950">Upload Optometrist Slip (Image or PDF)</div>
-                  <p className="text-[11px] text-stone-500 font-mono">Our lab technicians will verify the exact power before precision edging.</p>
-                  <label className="inline-block px-4 py-2 bg-stone-950 hover:bg-stone-800 text-white text-xs font-mono uppercase font-bold cursor-pointer">
-                    <span>Browse Files</span>
-                    <input
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setUploadedPrescFile(URL.createObjectURL(file));
-                        }
-                      }}
-                      className="hidden"
-                    />
-                  </label>
-                  {uploadedPrescFile && (
-                    <div className="text-xs text-stone-900 font-mono font-bold flex items-center justify-center gap-1 pt-1">
-                      <Check className="w-4 h-4 text-[#D4AF37]" />
-                      <span>Doctor Slip Attached</span>
+                <div className="space-y-3">
+                  <PrescriptionSlipUploader
+                    initialData={uploadedSlip || undefined}
+                    onSlipChange={(data) => setUploadedSlip(data)}
+                    showDoctorFields={true}
+                  />
+
+                  {/* Pupillary Distance (PD) Calibration option with slip */}
+                  <div className="p-3 bg-[#FAF8F5] border border-stone-200 flex items-center justify-between text-xs font-mono">
+                    <div className="flex items-center gap-2">
+                      <span className="text-stone-600 uppercase font-bold text-[11px]">Pupillary Distance (PD):</span>
+                      <div className="flex items-center gap-1">
+                        <input
+                          type="number"
+                          min={54}
+                          max={74}
+                          value={pdValue}
+                          onChange={(e) => setPdValue(Number(e.target.value))}
+                          className="w-14 p-1 text-center bg-white border border-stone-300 font-bold"
+                        />
+                        <span className="text-stone-500">mm</span>
+                      </div>
                     </div>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => setPdToolModalOpen(true)}
+                      className="text-stone-950 hover:text-stone-700 font-bold uppercase text-[10px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Sliders className="w-3 h-3 text-[#D4AF37]" />
+                      <span>Calibrate PD Meter</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -369,14 +388,35 @@ export const LensCustomizerModal: React.FC = () => {
                         setLeftCyl(p.leftEye.cyl);
                         setLeftAxis(p.leftEye.axis);
                         setPdValue(p.pd);
-                        setPrescriptionMode('manual');
+                        if (p.prescriptionFileUrl) {
+                          setUploadedSlip({
+                            fileUrl: p.prescriptionFileUrl,
+                            fileName: p.prescriptionFileName || 'Doctor_Slip',
+                            fileType: p.prescriptionFileType || 'image',
+                            fileSize: p.prescriptionFileSize || 'Saved Slip',
+                            doctorName: p.doctorName,
+                            clinicName: p.clinicName,
+                            notes: p.notes,
+                          });
+                        }
+                        setPrescriptionMode(p.prescriptionFileUrl ? 'upload' : 'manual');
                       }}
                       className="p-3 bg-white hover:bg-[#FAF8F5] border border-stone-200 cursor-pointer flex items-center justify-between transition-colors"
                     >
                       <div>
-                        <div className="font-serif font-bold text-xs text-stone-950">{p.savedName || `Prescription #${idx + 1}`}</div>
-                        <div className="text-[11px] text-stone-500 font-mono">
+                        <div className="flex items-center gap-2">
+                          <span className="font-serif font-bold text-xs text-stone-950">
+                            {p.savedName || `Prescription #${idx + 1}`}
+                          </span>
+                          {p.prescriptionFileUrl && (
+                            <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.2 bg-emerald-50 text-emerald-700 border border-emerald-200">
+                              Doctor Slip Attached ({p.prescriptionFileType === 'pdf' ? 'PDF' : 'Image'})
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[11px] text-stone-500 font-mono mt-0.5">
                           OD: {p.rightEye.sph}/{p.rightEye.cyl} • OS: {p.leftEye.sph}/{p.leftEye.cyl} • PD: {p.pd}mm
+                          {p.doctorName ? ` • Dr. ${p.doctorName}` : ''}
                         </div>
                       </div>
                       <span className="text-xs font-mono font-bold text-stone-950 uppercase">Use This</span>

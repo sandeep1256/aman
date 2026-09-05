@@ -96,9 +96,14 @@ export interface Prescription {
   leftEye: EyePower;
   pd: number; // Pupillary distance in mm (default 62)
   prescriptionFileUrl?: string;
+  prescriptionFileName?: string;
+  prescriptionFileType?: 'image' | 'pdf';
+  prescriptionFileSize?: string;
   doctorName?: string;
+  clinicName?: string;
   savedName?: string;
   date?: string;
+  notes?: string;
 }
 
 export interface CartItem {
@@ -135,19 +140,30 @@ export interface OrderTimelineStep {
   completed: boolean;
 }
 
+export interface OrderPaymentDetails {
+  transactionId: string;
+  methodTitle: string;
+  upiId?: string;
+  payerUpiId?: string;
+  utrNumber?: string;
+  paymentProofUrl?: string;
+  paymentProofName?: string;
+  paymentDoneDeclared?: boolean;
+  paymentVerifiedAt?: string;
+  verifiedBy?: string;
+  cardLast4?: string;
+}
+
 export interface Order {
   orderId: string;
   date: string;
   items: CartItem[];
   shippingAddress: ShippingAddress;
   paymentMethod: PaymentMethodType;
-  paymentStatus: 'paid' | 'pending' | 'refunded';
-  paymentDetails: {
-    transactionId: string;
-    methodTitle: string;
-    upiId?: string;
-    cardLast4?: string;
-  };
+  paymentStatus: 'paid' | 'pending' | 'failed' | 'refunded';
+  paymentDetails: OrderPaymentDetails;
+  prescriptionStatus?: 'not_required' | 'pending_verification' | 'verified' | 'clarification_needed';
+  prescriptionNotes?: string;
   subtotal: number;
   discount: number;
   shipping: number;

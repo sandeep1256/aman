@@ -16,12 +16,19 @@ import {
   Smartphone,
   CheckCircle2,
   Clock,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  ExternalLink,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { useApp } from '../../context/AppContext';
 import { PaymentMethodType, Order, ShippingAddress } from '../../types';
 import { formatPrice } from '../../data/currencies';
+
+export const MERCHANT_UPI_ID = '9772732488@aubank';
+export const MERCHANT_PAYEE_NAME = 'Aman Opticles';
 
 export const CheckoutModal: React.FC = () => {
   const { 
@@ -59,7 +66,13 @@ export const CheckoutModal: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('upi');
 
   // Specific Payment details
-  const [upiId, setUpiId] = useState('humanshu@okaxis');
+  const [upiId, setUpiId] = useState('');
+  const [payerUpiId, setPayerUpiId] = useState('');
+  const [utrNumber, setUtrNumber] = useState('');
+  const [upiPaymentDone, setUpiPaymentDone] = useState(true);
+  const [copiedUpi, setCopiedUpi] = useState(false);
+  const [paymentProofUrl, setPaymentProofUrl] = useState<string | null>(null);
+  const [paymentProofName, setPaymentProofName] = useState<string | null>(null);
   const [selectedUpiApp, setSelectedUpiApp] = useState<'gpay' | 'phonepe' | 'paytm' | 'cred'>('gpay');
   const [qrTimeLeft, setQrTimeLeft] = useState(599); // 10 min
 
@@ -160,22 +173,40 @@ export const CheckoutModal: React.FC = () => {
 
   const completeOrderPlacement = () => {
     const newOrderId = `AO-${Math.floor(100000 + Math.random() * 900000)}`;
+    const hasPrescription = cart.some(item => !!item.prescription || item.isPrescription);
+    
+    // Determine payment status
+    let orderPaymentStatus: Order['paymentStatus'] = 'paid';
+    if (paymentMethod === 'upi') {
+      // If customer explicitly marked payment done, admin still has "Payment Done or Not" verification
+      orderPaymentStatus = upiPaymentDone ? (utrNumber.trim() ? 'paid' : 'pending') : 'pending';
+    } else if (paymentMethod === 'cod') {
+      orderPaymentStatus = 'pending';
+    }
+
     const newOrder: Order = {
       orderId: newOrderId,
       date: new Date().toISOString(),
       items: cart,
       shippingAddress: address,
       paymentMethod,
-      paymentStatus: 'paid',
+      paymentStatus: orderPaymentStatus,
       paymentDetails: {
-        transactionId: `TXN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
-        methodTitle: paymentMethod === 'upi' ? `Instant UPI (${selectedUpiApp.toUpperCase()})` :
+        transactionId: utrNumber.trim() ? `UTR-${utrNumber.trim()}` : `TXN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
+        methodTitle: paymentMethod === 'upi' ? `Instant UPI (AU Bank: ${MERCHANT_UPI_ID})` :
                      paymentMethod === 'card' ? `${cardBrand.toUpperCase()} Card (ending in ${cardNumber.slice(-4)})` :
                      paymentMethod === 'wallet' ? `Digital Wallet (${selectedWallet})` :
                      paymentMethod === 'netbanking' ? `Net Banking (${selectedBank})` : 'Cash on Delivery',
-        upiId: paymentMethod === 'upi' ? upiId : undefined,
+        upiId: paymentMethod === 'upi' ? MERCHANT_UPI_ID : undefined,
+        payerUpiId: paymentMethod === 'upi' ? (payerUpiId.trim() || upiId.trim() || undefined) : undefined,
+        utrNumber: paymentMethod === 'upi' ? (utrNumber.trim() || undefined) : undefined,
+        paymentProofUrl: paymentMethod === 'upi' ? (paymentProofUrl || undefined) : undefined,
+        paymentProofName: paymentMethod === 'upi' ? (paymentProofName || undefined) : undefined,
+        paymentDoneDeclared: paymentMethod === 'upi' ? upiPaymentDone : undefined,
         cardLast4: paymentMethod === 'card' ? cardNumber.slice(-4) : undefined
       },
+      prescriptionStatus: hasPrescription ? 'pending_verification' : 'not_required',
+      prescriptionNotes: hasPrescription ? 'Customer prescription attached for optician verification' : undefined,
       subtotal: cartSubtotal,
       discount: appliedDiscount,
       shipping: shippingFee,
@@ -186,8 +217,12 @@ export const CheckoutModal: React.FC = () => {
       timeline: [
         {
           status: 'confirmed',
-          title: 'Order Confirmed & Payment Verified',
-          description: 'Prescription passed to precision optical fitting lab',
+          title: orderPaymentStatus === 'paid' 
+            ? 'Order Confirmed & Payment Received' 
+            : 'Order Confirmed (Payment Verification Pending)',
+          description: paymentMethod === 'upi'
+            ? `UPI transfer ${upiPaymentDone ? `(UTR: ${utrNumber || 'Submitted'})` : 'pending'} to ${MERCHANT_UPI_ID}`
+            : 'Prescription passed to precision optical fitting lab',
           timestamp: 'Just now',
           completed: true
         },

@@ -29,6 +29,8 @@ import { useApp } from '../../context/AppContext';
 import { Order, CartItem, Product, LensOption, Prescription, PaymentMethodType, OrderTimelineStep } from '../../types';
 import { formatPrice } from '../../data/currencies';
 import { LENS_OPTIONS } from '../../data/lenses';
+import { DoctorSlipViewerModal } from '../common/DoctorSlipViewerModal';
+import { PrescriptionSlipUploader, UploadedSlipData } from '../common/PrescriptionSlipUploader';
 
 export const AdminOrderManager: React.FC = () => {
   const { 
@@ -51,6 +53,7 @@ export const AdminOrderManager: React.FC = () => {
   const [courierNameInput, setCourierNameInput] = useState('');
   const [trackingNumberInput, setTrackingNumberInput] = useState('');
   const [estimatedDeliveryInput, setEstimatedDeliveryInput] = useState('');
+  const [viewingSlipPrescription, setViewingSlipPrescription] = useState<Prescription | null>(null);
 
   // ----------------------------------------------------
   // MANUAL ORDER CREATION FORM STATE
@@ -62,6 +65,7 @@ export const AdminOrderManager: React.FC = () => {
   const [customerCity, setCustomerCity] = useState('');
   const [customerState, setCustomerState] = useState('');
   const [customerPincode, setCustomerPincode] = useState('');
+  const [manualOrderSlip, setManualOrderSlip] = useState<UploadedSlipData | null>(null);
 
   const [selectedProductId, setSelectedProductId] = useState<string>(products[0]?.id || '');
   const [selectedColorIndex, setSelectedColorIndex] = useState<number>(0);
@@ -231,7 +235,13 @@ export const AdminOrderManager: React.FC = () => {
       rightEye: { sph: rSph, cyl: rCyl, axis: rAxis },
       leftEye: { sph: lSph, cyl: lCyl, axis: lAxis },
       pd: parseFloat(pdValue) || 63,
-      doctorName: 'Aman Opticles Clinic',
+      doctorName: manualOrderSlip?.doctorName || 'Aman Opticles Clinic',
+      clinicName: manualOrderSlip?.clinicName,
+      prescriptionFileUrl: manualOrderSlip?.fileUrl,
+      prescriptionFileName: manualOrderSlip?.fileName,
+      prescriptionFileType: manualOrderSlip?.fileType,
+      prescriptionFileSize: manualOrderSlip?.fileSize,
+      notes: manualOrderSlip?.notes,
       savedName: `${customerName} - Prescription`,
       date: new Date().toISOString()
     } : undefined;
@@ -308,6 +318,7 @@ export const AdminOrderManager: React.FC = () => {
       setCustomerEmail('');
       setCustomerStreet('');
       setCustomerCity('');
+      setManualOrderSlip(null);
     }
   };
 
@@ -581,10 +592,34 @@ export const AdminOrderManager: React.FC = () => {
                               </div>
                               {/* Prescription Values if attached */}
                               {item.prescription && (
-                                <div className="mt-1 flex items-center gap-3 text-[10px] font-mono bg-white p-1 border border-stone-200 text-stone-700">
-                                  <span>OD (Right): {item.prescription.rightEye?.sph} / {item.prescription.rightEye?.cyl} @ {item.prescription.rightEye?.axis}°</span>
-                                  <span>OS (Left): {item.prescription.leftEye?.sph} / {item.prescription.leftEye?.cyl} @ {item.prescription.leftEye?.axis}°</span>
-                                  <span>PD: {item.prescription.pd || 63}mm</span>
+                                <div className="mt-1.5 space-y-1">
+                                  <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono bg-white p-1.5 border border-stone-200 text-stone-700">
+                                    <span>OD: {item.prescription.rightEye?.sph} / {item.prescription.rightEye?.cyl} @ {item.prescription.rightEye?.axis}°</span>
+                                    <span>•</span>
+                                    <span>OS: {item.prescription.leftEye?.sph} / {item.prescription.leftEye?.cyl} @ {item.prescription.leftEye?.axis}°</span>
+                                    <span>•</span>
+                                    <span>PD: {item.prescription.pd || 63}mm</span>
+                                    {item.prescription.doctorName && (
+                                      <span>• Dr. {item.prescription.doctorName}</span>
+                                    )}
+                                  </div>
+
+                                  {item.prescription.prescriptionFileUrl && (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                                        <FileText className="w-3 h-3 text-emerald-600" />
+                                        <span>Customer Uploaded Slip ({item.prescription.prescriptionFileType === 'pdf' ? 'PDF' : 'Image'})</span>
+                                      </span>
+                                      <button
+                                        type="button"
+                                        onClick={() => setViewingSlipPrescription(item.prescription!)}
+                                        className="text-[10px] font-mono font-bold uppercase text-stone-900 hover:text-stone-700 bg-stone-100 hover:bg-stone-200 px-2 py-0.5 border border-stone-300 flex items-center gap-1 cursor-pointer"
+                                      >
+                                        <Eye className="w-3 h-3 text-[#D4AF37]" />
+                                        <span>View Doctor Slip</span>
+                                      </button>
+                                    </div>
+                                  )}
                                 </div>
                               )}
                             </div>
@@ -898,6 +933,18 @@ export const AdminOrderManager: React.FC = () => {
                       />
                       <span className="text-stone-500">mm</span>
                     </div>
+
+                    {/* Slip Uploader for Store Walk-in */}
+                    <div className="pt-2 border-t border-stone-200">
+                      <div className="text-[10px] font-mono font-bold uppercase text-stone-600 mb-1.5">
+                        Attach Doctor's Slip / Rx Document (Image or PDF)
+                      </div>
+                      <PrescriptionSlipUploader
+                        initialData={manualOrderSlip || undefined}
+                        onSlipChange={setManualOrderSlip}
+                        showDoctorFields={true}
+                      />
+                    </div>
                   </div>
                 )}
               </div>
@@ -1073,8 +1120,23 @@ export const AdminOrderManager: React.FC = () => {
                         <div>{item.prescription.leftEye?.cyl || '0.00'}</div>
                         <div>{item.prescription.leftEye?.axis || '0'}°</div>
                       </div>
-                      <div className="text-[11px] text-stone-700 pt-1">
-                        Measured Pupillary Distance (PD): <strong>{item.prescription.pd || 63} mm</strong>
+                      <div className="text-[11px] text-stone-700 pt-1 flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                          Measured Pupillary Distance (PD): <strong>{item.prescription.pd || 63} mm</strong>
+                          {item.prescription.doctorName && (
+                            <span className="ml-2">• Prescribed by: Dr. <strong>{item.prescription.doctorName}</strong> {item.prescription.clinicName ? `(${item.prescription.clinicName})` : ''}</span>
+                          )}
+                        </div>
+                        {item.prescription.prescriptionFileUrl && (
+                          <button
+                            type="button"
+                            onClick={() => setViewingSlipPrescription(item.prescription!)}
+                            className="px-2 py-1 bg-stone-950 text-white font-mono text-[10px] uppercase font-bold flex items-center gap-1 cursor-pointer hover:bg-stone-800"
+                          >
+                            <Eye className="w-3 h-3 text-[#D4AF37]" />
+                            <span>View Original Doctor Slip ({item.prescription.prescriptionFileType === 'pdf' ? 'PDF' : 'Image'})</span>
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1173,6 +1235,20 @@ export const AdminOrderManager: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Doctor Slip Viewer Modal */}
+      {viewingSlipPrescription && viewingSlipPrescription.prescriptionFileUrl && (
+        <DoctorSlipViewerModal
+          isOpen={!!viewingSlipPrescription}
+          onClose={() => setViewingSlipPrescription(null)}
+          fileUrl={viewingSlipPrescription.prescriptionFileUrl}
+          fileName={viewingSlipPrescription.prescriptionFileName || 'Doctor_Prescription_Slip'}
+          fileType={viewingSlipPrescription.prescriptionFileType}
+          doctorName={viewingSlipPrescription.doctorName}
+          clinicName={viewingSlipPrescription.clinicName}
+          date={viewingSlipPrescription.date}
+        />
       )}
     </div>
   );

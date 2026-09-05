@@ -26,6 +26,8 @@ import {
 import { useApp } from '../../context/AppContext';
 import { Order, Prescription } from '../../types';
 import { formatPrice } from '../../data/currencies';
+import { PrescriptionSlipUploader, UploadedSlipData } from '../common/PrescriptionSlipUploader';
+import { DoctorSlipViewerModal } from '../common/DoctorSlipViewerModal';
 
 export const AccountView: React.FC = () => {
   const { 
@@ -55,9 +57,12 @@ export const AccountView: React.FC = () => {
 
   const [activeSubTab, setActiveSubTab] = useState<'orders' | 'prescriptions' | 'lookbook' | 'wishlist'>('orders');
   const [showAddPrescriptionModal, setShowAddPrescriptionModal] = useState(false);
+  const [viewingSlip, setViewingSlip] = useState<Prescription | null>(null);
 
   // New Prescription Form State
+  const [prescEntryMode, setPrescEntryMode] = useState<'upload' | 'manual' | 'both'>('upload');
   const [newPrescName, setNewPrescName] = useState('Daily Screen Protection');
+  const [newSlipData, setNewSlipData] = useState<UploadedSlipData | null>(null);
   const [rSph, setRSph] = useState('-1.50');
   const [rCyl, setRCyl] = useState('-0.50');
   const [rAxis, setRAxis] = useState('90');
@@ -73,15 +78,23 @@ export const AccountView: React.FC = () => {
   const handleCreatePrescription = async (e: React.FormEvent) => {
     e.preventDefault();
     const newP: Prescription = {
-      savedName: newPrescName,
+      savedName: newPrescName.trim() || 'My Prescription',
       type: 'single_vision',
       rightEye: { sph: rSph, cyl: rCyl, axis: rAxis },
       leftEye: { sph: lSph, cyl: lCyl, axis: lAxis },
       pd,
+      prescriptionFileUrl: newSlipData?.fileUrl || undefined,
+      prescriptionFileName: newSlipData?.fileName,
+      prescriptionFileType: newSlipData?.fileType,
+      prescriptionFileSize: newSlipData?.fileSize,
+      doctorName: newSlipData?.doctorName,
+      clinicName: newSlipData?.clinicName,
+      notes: newSlipData?.notes,
       date: new Date().toLocaleDateString()
     };
     await savePrescription(newP);
     setShowAddPrescriptionModal(false);
+    setNewSlipData(null);
   };
 
   return (
@@ -371,7 +384,15 @@ export const AccountView: React.FC = () => {
                   <div key={idx} className="p-5 bg-white border border-stone-200 space-y-4 shadow-xs">
                     <div className="flex items-start justify-between">
                       <div>
-                        <div className="text-xs font-mono font-bold text-stone-950 uppercase">{p.savedName || `Prescription #${idx + 1}`}</div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-mono font-bold text-stone-950 uppercase">{p.savedName || `Prescription #${idx + 1}`}</span>
+                          {p.prescriptionFileUrl && (
+                            <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                              <FileText className="w-3 h-3 text-emerald-600" />
+                              <span>Doctor Slip ({p.prescriptionFileType === 'pdf' ? 'PDF' : 'Photo'})</span>
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[10px] text-stone-500 font-mono mt-0.5">Type: {p.type} • PD: {p.pd}mm</div>
                       </div>
                       <button
@@ -396,11 +417,27 @@ export const AccountView: React.FC = () => {
                       </div>
                     </div>
 
-                    {p.doctorName && (
-                      <div className="text-[10px] text-stone-500 font-mono">
-                        Verified by: <span className="text-stone-900 font-bold">{p.doctorName}</span>
+                    {/* Doctor Details & Slip Viewer Trigger */}
+                    <div className="flex items-center justify-between gap-2 pt-1">
+                      <div className="text-[10px] text-stone-500 font-mono truncate">
+                        {p.doctorName ? (
+                          <span>Dr. <strong className="text-stone-900">{p.doctorName}</strong> {p.clinicName ? `(${p.clinicName})` : ''}</span>
+                        ) : (
+                          <span>Lab Verified Specification</span>
+                        )}
                       </div>
-                    )}
+
+                      {p.prescriptionFileUrl && (
+                        <button
+                          type="button"
+                          onClick={() => setViewingSlip(p)}
+                          className="px-2.5 py-1 bg-[#FAF8F5] hover:bg-stone-200 text-stone-900 border border-stone-300 text-[11px] font-mono font-bold flex items-center gap-1.5 transition-colors cursor-pointer shrink-0"
+                        >
+                          <Eye className="w-3.5 h-3.5 text-[#D4AF37]" />
+                          <span>View Doctor Slip</span>
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -408,102 +445,168 @@ export const AccountView: React.FC = () => {
 
             {/* Modal for adding new prescription */}
             {showAddPrescriptionModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-950/60 backdrop-blur-xs">
-                <div className="bg-white border border-stone-300 w-full max-w-md p-6 space-y-4 shadow-xl">
-                  <h4 className="font-serif text-lg font-bold text-stone-950">Add Optical Prescription</h4>
-                  <form onSubmit={handleCreatePrescription} className="space-y-3">
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-950/60 backdrop-blur-xs overflow-y-auto">
+                <div className="bg-white border border-stone-300 w-full max-w-lg p-5 sm:p-6 space-y-4 shadow-xl my-auto max-h-[90vh] overflow-y-auto">
+                  <div className="flex items-center justify-between border-b border-stone-200 pb-3">
                     <div>
-                      <label className="block text-[10px] font-mono font-bold uppercase text-stone-600 mb-1">Prescription Label</label>
+                      <h4 className="font-serif text-lg font-bold text-stone-950">Add Optical Prescription</h4>
+                      <p className="text-[11px] text-stone-500 font-mono">Upload your optometrist slip or type lens powers manually.</p>
+                    </div>
+                    <button
+                      onClick={() => setShowAddPrescriptionModal(false)}
+                      className="p-1 text-stone-400 hover:text-stone-950 transition-colors"
+                    >
+                      <Trash2 className="hidden" />
+                      <span className="text-lg leading-none">&times;</span>
+                    </button>
+                  </div>
+
+                  {/* Mode Switch Tabs */}
+                  <div className="flex border border-stone-300 bg-[#FAF8F5] p-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setPrescEntryMode('upload')}
+                      className={`flex-1 py-1.5 text-xs font-mono font-bold uppercase transition-colors ${
+                        prescEntryMode === 'upload' ? 'bg-stone-950 text-white' : 'text-stone-600 hover:text-stone-950'
+                      }`}
+                    >
+                      Upload Slip (Image/PDF)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPrescEntryMode('manual')}
+                      className={`flex-1 py-1.5 text-xs font-mono font-bold uppercase transition-colors ${
+                        prescEntryMode === 'manual' ? 'bg-stone-950 text-white' : 'text-stone-600 hover:text-stone-950'
+                      }`}
+                    >
+                      Manual Numbers
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPrescEntryMode('both')}
+                      className={`flex-1 py-1.5 text-xs font-mono font-bold uppercase transition-colors ${
+                        prescEntryMode === 'both' ? 'bg-stone-950 text-white' : 'text-stone-600 hover:text-stone-950'
+                      }`}
+                    >
+                      Slip + Numbers
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleCreatePrescription} className="space-y-3.5">
+                    <div>
+                      <label className="block text-[10px] font-mono font-bold uppercase text-stone-600 mb-1">
+                        Prescription Label / Patient Name
+                      </label>
                       <input
                         type="text"
                         required
+                        placeholder="e.g. My Computer Glasses / Dr. Slip 2026"
                         value={newPrescName}
                         onChange={(e) => setNewPrescName(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                        className="w-full px-3 py-2 bg-[#FAF8F5] border border-stone-300 text-xs font-mono focus:border-stone-950 focus:outline-none"
                       />
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="block text-[9px] font-mono uppercase text-stone-600">OD SPH</label>
-                        <input
-                          type="text"
-                          value={rSph}
-                          onChange={(e) => setRSph(e.target.value)}
-                          className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                    {/* 1. UPLOAD SLIP SECTION */}
+                    {(prescEntryMode === 'upload' || prescEntryMode === 'both') && (
+                      <div className="space-y-2">
+                        <PrescriptionSlipUploader
+                          initialData={newSlipData || undefined}
+                          onSlipChange={(data) => setNewSlipData(data)}
+                          showDoctorFields={true}
                         />
                       </div>
-                      <div>
-                        <label className="block text-[9px] font-mono uppercase text-stone-600">OD CYL</label>
-                        <input
-                          type="text"
-                          value={rCyl}
-                          onChange={(e) => setRCyl(e.target.value)}
-                          className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] font-mono uppercase text-stone-600">OD AXIS</label>
-                        <input
-                          type="text"
-                          value={rAxis}
-                          onChange={(e) => setRAxis(e.target.value)}
-                          className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
-                        />
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="grid grid-cols-3 gap-2">
-                      <div>
-                        <label className="block text-[9px] font-mono uppercase text-stone-600">OS SPH</label>
-                        <input
-                          type="text"
-                          value={lSph}
-                          onChange={(e) => setLSph(e.target.value)}
-                          className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] font-mono uppercase text-stone-600">OS CYL</label>
-                        <input
-                          type="text"
-                          value={lCyl}
-                          onChange={(e) => setLCyl(e.target.value)}
-                          className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[9px] font-mono uppercase text-stone-600">OS AXIS</label>
-                        <input
-                          type="text"
-                          value={lAxis}
-                          onChange={(e) => setLAxis(e.target.value)}
-                          className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
-                        />
-                      </div>
-                    </div>
+                    {/* 2. MANUAL NUMBERS SECTION */}
+                    {(prescEntryMode === 'manual' || prescEntryMode === 'both') && (
+                      <div className="space-y-2.5 pt-1">
+                        <div className="text-[10px] font-mono font-bold uppercase text-stone-500">
+                          Optical Power Specification
+                        </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-[9px] font-mono uppercase text-stone-600">OD SPH</label>
+                            <input
+                              type="text"
+                              value={rSph}
+                              onChange={(e) => setRSph(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-mono uppercase text-stone-600">OD CYL</label>
+                            <input
+                              type="text"
+                              value={rCyl}
+                              onChange={(e) => setRCyl(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-mono uppercase text-stone-600">OD AXIS</label>
+                            <input
+                              type="text"
+                              value={rAxis}
+                              onChange={(e) => setRAxis(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                            />
+                          </div>
+                        </div>
 
-                    <div>
-                      <label className="block text-[10px] font-mono font-bold uppercase text-stone-600 mb-1">Pupillary Distance (PD in mm)</label>
-                      <input
-                        type="number"
-                        value={pd}
-                        onChange={(e) => setPd(Number(e.target.value))}
-                        className="w-full px-3 py-2 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
-                      />
-                    </div>
+                        <div className="grid grid-cols-3 gap-2">
+                          <div>
+                            <label className="block text-[9px] font-mono uppercase text-stone-600">OS SPH</label>
+                            <input
+                              type="text"
+                              value={lSph}
+                              onChange={(e) => setLSph(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-mono uppercase text-stone-600">OS CYL</label>
+                            <input
+                              type="text"
+                              value={lCyl}
+                              onChange={(e) => setLCyl(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[9px] font-mono uppercase text-stone-600">OS AXIS</label>
+                            <input
+                              type="text"
+                              value={lAxis}
+                              onChange={(e) => setLAxis(e.target.value)}
+                              className="w-full px-2 py-1.5 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                            />
+                          </div>
+                        </div>
 
-                    <div className="flex gap-2 pt-2">
+                        <div>
+                          <label className="block text-[10px] font-mono font-bold uppercase text-stone-600 mb-1">Pupillary Distance (PD in mm)</label>
+                          <input
+                            type="number"
+                            value={pd}
+                            onChange={(e) => setPd(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-[#FAF8F5] border border-stone-300 text-xs font-mono"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex gap-2 pt-3 border-t border-stone-200">
                       <button
                         type="button"
                         onClick={() => setShowAddPrescriptionModal(false)}
-                        className="flex-1 py-2 bg-[#FAF8F5] border border-stone-300 text-xs font-mono uppercase font-bold"
+                        className="flex-1 py-2.5 bg-[#FAF8F5] hover:bg-stone-200 border border-stone-300 text-xs font-mono uppercase font-bold transition-colors cursor-pointer"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
-                        className="flex-1 py-2 bg-stone-950 text-white text-xs font-mono uppercase font-bold hover:bg-stone-800"
+                        className="flex-1 py-2.5 bg-stone-950 hover:bg-stone-800 text-white text-xs font-mono uppercase font-bold transition-colors cursor-pointer shadow-xs"
                       >
                         Save to Database
                       </button>
@@ -511,6 +614,20 @@ export const AccountView: React.FC = () => {
                   </form>
                 </div>
               </div>
+            )}
+
+            {/* Doctor Slip Viewer Modal */}
+            {viewingSlip && viewingSlip.prescriptionFileUrl && (
+              <DoctorSlipViewerModal
+                isOpen={!!viewingSlip}
+                onClose={() => setViewingSlip(null)}
+                fileUrl={viewingSlip.prescriptionFileUrl}
+                fileName={viewingSlip.prescriptionFileName || viewingSlip.savedName || 'Doctor_Slip'}
+                fileType={viewingSlip.prescriptionFileType}
+                doctorName={viewingSlip.doctorName}
+                clinicName={viewingSlip.clinicName}
+                date={viewingSlip.date}
+              />
             )}
           </div>
         )}

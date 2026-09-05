@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   ShoppingBag, 
   Trash2, 
@@ -10,10 +10,12 @@ import {
   Sparkles, 
   Lock,
   Layers,
-  Eye
+  Eye,
+  FileText
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatPrice } from '../../data/currencies';
+import { DoctorSlipViewerModal } from '../common/DoctorSlipViewerModal';
 
 export const CartView: React.FC = () => {
   const { 
@@ -27,6 +29,15 @@ export const CartView: React.FC = () => {
     setSelectedProductForTryOn,
     setActiveTab 
   } = useApp();
+
+  const [viewingCartSlip, setViewingCartSlip] = useState<{
+    url: string;
+    name: string;
+    type?: 'image' | 'pdf';
+    doctor?: string;
+    clinic?: string;
+    date?: string;
+  } | null>(null);
 
   if (cart.length === 0) {
     return (
@@ -117,8 +128,33 @@ export const CartView: React.FC = () => {
                           <span>{item.lensOption.name} (+{formatPrice(item.lensOption.price, currency)})</span>
                         </div>
                         {item.prescription && (
-                          <div className="text-stone-500 text-[10px] font-mono">
-                            OD: {item.prescription.rightEye.sph} SPH • OS: {item.prescription.leftEye.sph} SPH • PD: {item.prescription.pd}mm
+                          <div className="space-y-1">
+                            <div className="text-stone-500 text-[10px] font-mono">
+                              OD: {item.prescription.rightEye.sph} SPH • OS: {item.prescription.leftEye.sph} SPH • PD: {item.prescription.pd}mm
+                            </div>
+                            {item.prescription.prescriptionFileUrl && (
+                              <div className="flex items-center gap-2 pt-1 border-t border-stone-200">
+                                <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-200 flex items-center gap-1">
+                                  <FileText className="w-3 h-3 text-emerald-600" />
+                                  <span>Doctor Slip ({item.prescription.prescriptionFileType === 'pdf' ? 'PDF' : 'Photo'})</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => setViewingCartSlip({
+                                    url: item.prescription!.prescriptionFileUrl!,
+                                    name: item.prescription!.prescriptionFileName || 'Doctor_Prescription_Slip',
+                                    type: item.prescription!.prescriptionFileType,
+                                    doctor: item.prescription!.doctorName,
+                                    clinic: item.prescription!.clinicName,
+                                    date: item.prescription!.date
+                                  })}
+                                  className="text-[10px] font-mono font-bold uppercase text-stone-900 hover:text-stone-700 bg-white hover:bg-stone-100 px-2 py-0.5 border border-stone-300 flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Eye className="w-3 h-3 text-[#D4AF37]" />
+                                  <span>View Slip</span>
+                                </button>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -226,6 +262,20 @@ export const CartView: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Doctor Slip Viewer Modal */}
+      {viewingCartSlip && (
+        <DoctorSlipViewerModal
+          isOpen={!!viewingCartSlip}
+          onClose={() => setViewingCartSlip(null)}
+          fileUrl={viewingCartSlip.url}
+          fileName={viewingCartSlip.name}
+          fileType={viewingCartSlip.type}
+          doctorName={viewingCartSlip.doctor}
+          clinicName={viewingCartSlip.clinic}
+          date={viewingCartSlip.date}
+        />
+      )}
     </div>
   );
 };
