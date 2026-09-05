@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Camera, 
   Sparkles, 
@@ -12,12 +12,14 @@ import {
   Eye, 
   CheckCircle2,
   ChevronRight,
-  Maximize2
+  Maximize2,
+  ShoppingBag
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { PRODUCTS } from '../../data/products';
 import { FaceShape, ProductCategory } from '../../types';
 import { formatPrice } from '../../data/currencies';
+import { PanIndiaDeliveryMap } from './PanIndiaDeliveryMap';
 
 export const HomeView: React.FC = () => {
   const { 
@@ -25,10 +27,14 @@ export const HomeView: React.FC = () => {
     setSelectedFrameShape, 
     setSelectedProductForDetail, 
     setSelectedProductForTryOn, 
+    setSelectedProductForLensConfig,
+    addToCart,
     currency, 
     t, 
     setActiveTab 
   } = useApp();
+
+  const [addedToastId, setAddedToastId] = useState<string | null>(null);
 
   const bestSellers = PRODUCTS.filter(p => p.isBestSeller).slice(0, 4);
 
@@ -153,9 +159,32 @@ export const HomeView: React.FC = () => {
                 <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed">
                   {PRODUCTS[0].description}
                 </p>
+
+                {/* Direct Action Bar on Hero Flagship Card */}
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      addToCart(PRODUCTS[0], PRODUCTS[0].colors[0]);
+                      setAddedToastId(PRODUCTS[0].id);
+                      setTimeout(() => setAddedToastId(null), 2000);
+                    }}
+                    className="flex-1 py-2.5 px-3 bg-stone-950 hover:bg-stone-800 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>{addedToastId === PRODUCTS[0].id ? '✓ In Bag' : 'Add to Bag'}</span>
+                  </button>
+                  <button
+                    onClick={() => setSelectedProductForLensConfig(PRODUCTS[0])}
+                    className="py-2.5 px-3 bg-[#FAF8F5] hover:bg-stone-200 text-stone-900 border border-stone-300 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    title="Add Prescription / Blue-Cut Lenses"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>+ Lenses</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-stone-200 flex items-center justify-between">
+              <div className="mt-4 pt-3 border-t border-stone-200 flex items-center justify-between">
                 <div className="flex items-center gap-1 text-[11px] text-stone-600 font-mono">
                   <span className="text-[#D4AF37]">★★★★★</span>
                   <span>4.9 (428 Reviews)</span>
@@ -362,13 +391,36 @@ export const HomeView: React.FC = () => {
                 </div>
               </div>
 
-              <div className="p-4 pt-0 flex gap-2">
+              {/* Actions Footer */}
+              <div className="p-4 pt-0 space-y-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      addToCart(product, product.colors[0]);
+                      setAddedToastId(product.id);
+                      setTimeout(() => setAddedToastId(null), 2000);
+                    }}
+                    className="flex-1 py-2.5 bg-stone-950 hover:bg-stone-800 text-white font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                  >
+                    <ShoppingBag className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <span>{addedToastId === product.id ? '✓ In Bag' : 'Add to Bag'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => setSelectedProductForLensConfig(product)}
+                    className="p-2.5 bg-[#FAF8F5] hover:bg-stone-200 border border-stone-300 text-stone-900 transition-colors cursor-pointer"
+                    title="Add Prescription / Blue-Cut Lenses"
+                  >
+                    <Layers className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  </button>
+                </div>
+
                 <button
                   onClick={() => {
                     setSelectedProductForTryOn(product);
                     setActiveTab('tryon');
                   }}
-                  className="flex-1 py-2.5 bg-stone-950 text-white hover:bg-stone-800 font-bold text-[10px] uppercase tracking-widest flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  className="w-full py-2 bg-[#FAF8F5] hover:bg-stone-200 text-stone-800 font-bold text-[10px] uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-stone-200"
                 >
                   <Camera className="w-3.5 h-3.5 text-[#D4AF37]" />
                   <span>3D Try-On</span>
@@ -379,7 +431,10 @@ export const HomeView: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. HERITAGE & CRAFTSMANSHIP BANNER */}
+      {/* 5. PAN-INDIA RUNNING VECTOR DELIVERY MAP (All India Courier Logistics) */}
+      <PanIndiaDeliveryMap />
+
+      {/* 6. HERITAGE & CRAFTSMANSHIP BANNER */}
       <section className="max-w-7xl mx-auto px-4 py-8">
         <div className="p-8 sm:p-12 bg-white border border-stone-200 text-center space-y-6">
           <div className="w-12 h-12 bg-[#F5F2ED] border border-stone-300 text-stone-950 flex items-center justify-center mx-auto">

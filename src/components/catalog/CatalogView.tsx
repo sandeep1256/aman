@@ -49,6 +49,7 @@ export const CatalogView: React.FC = () => {
   const [maxPrice, setMaxPrice] = useState<number>(10000);
   const [sortBy, setSortBy] = useState<'popular' | 'price_low' | 'price_high' | 'rating'>('popular');
   const [showFiltersDrawer, setShowFiltersDrawer] = useState<boolean>(false);
+  const [addedToastId, setAddedToastId] = useState<string | null>(null);
 
   // Frame Shape Chips
   const frameShapesList: { shape: FrameShape | 'all'; label: string }[] = [
@@ -358,30 +359,40 @@ export const CatalogView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Actions Footer */}
-                  <div className="p-4 pt-0 flex items-center gap-2">
-                    {/* 3D AR Try-On Button */}
+                  {/* Actions Footer with Add to Bag */}
+                  <div className="p-4 pt-0 space-y-2">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          addToCart(product, product.colors[0]);
+                          setAddedToastId(product.id);
+                          setTimeout(() => setAddedToastId(null), 2000);
+                        }}
+                        className="flex-1 py-2.5 px-3 bg-stone-950 hover:bg-stone-800 text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                      >
+                        <ShoppingBag className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span>{addedToastId === product.id ? '✓ In Bag' : 'Add to Bag'}</span>
+                      </button>
+
+                      <button
+                        onClick={() => setSelectedProductForLensConfig(product)}
+                        className="py-2.5 px-3 bg-[#FAF8F5] hover:bg-stone-200 border border-stone-300 text-stone-900 transition-colors cursor-pointer"
+                        title="Add Prescription / Blue-Cut Lenses"
+                      >
+                        <Layers className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      </button>
+                    </div>
+
                     <button
                       onClick={() => {
                         setSelectedProductForTryOn(product);
                         setActiveTab('tryon');
                       }}
-                      className="flex-1 py-2.5 px-2 bg-[#F5F2ED] hover:bg-stone-200 text-stone-900 font-bold text-[10px] uppercase tracking-widest border border-stone-300 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                      className="w-full py-1.5 bg-[#FAF8F5] hover:bg-stone-200 text-stone-800 font-bold text-[10px] uppercase tracking-wider border border-stone-200 flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                       title="Virtual Try-On"
                     >
-                      <Camera className="w-3.5 h-3.5 text-[#D4AF37]" />
-                      <span>3D Try-On</span>
-                    </button>
-
-                    {/* Select Lenses / Buy */}
-                    <button
-                      onClick={() => {
-                        setSelectedProductForLensConfig(product);
-                      }}
-                      className="py-2.5 px-3.5 bg-stone-950 hover:bg-stone-800 text-white font-bold text-[10px] uppercase tracking-widest flex items-center justify-center transition-colors cursor-pointer shadow-xs"
-                      title="Configure Lenses & Order"
-                    >
-                      <Layers className="w-3.5 h-3.5 text-[#D4AF37]" />
+                      <Camera className="w-3 h-3 text-[#D4AF37]" />
+                      <span>3D Live Try-On</span>
                     </button>
                   </div>
                 </div>

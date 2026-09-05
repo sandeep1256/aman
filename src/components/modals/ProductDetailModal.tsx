@@ -35,6 +35,7 @@ export const ProductDetailModal: React.FC = () => {
 
   const product = selectedProductForDetail;
   const [selectedImgIndex, setSelectedImgIndex] = useState(0);
+  const [isAddedToBag, setIsAddedToBag] = useState(false);
   const [selectedColor, setSelectedColor] = useState<ProductColor>(() => {
     return product ? product.colors[0] : { name: 'Black', hex: '#000', frameImg: '', overlaySvgType: 'wayfarer' };
   });
@@ -262,10 +263,22 @@ export const ProductDetailModal: React.FC = () => {
         </div>
 
         {/* Modal Actions Footer */}
-        <div className="p-4 sm:p-5 bg-[#FAF8F5] border-t border-stone-200 flex items-center justify-between gap-3">
+        <div className="p-4 sm:p-5 bg-[#FAF8F5] border-t border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <button
+            onClick={() => {
+              addToCart(product, selectedColor);
+              setIsAddedToBag(true);
+              setTimeout(() => setIsAddedToBag(false), 2200);
+            }}
+            className="w-full sm:w-auto flex-1 py-3 px-4 bg-stone-900 hover:bg-stone-800 text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+          >
+            <ShoppingBag className="w-4 h-4 text-[#D4AF37]" />
+            <span>{isAddedToBag ? '✓ Added to Cart!' : 'Add Frame to Cart'}</span>
+          </button>
+
           <button
             onClick={handleLaunchTryOn}
-            className="flex-1 py-3 px-4 bg-white hover:bg-stone-100 text-stone-950 font-mono font-bold text-xs uppercase tracking-wider border border-stone-300 flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
+            className="w-full sm:w-auto flex-1 py-3 px-4 bg-white hover:bg-stone-100 text-stone-950 font-mono font-bold text-xs uppercase tracking-wider border border-stone-300 flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-colors"
           >
             <Camera className="w-4 h-4 text-[#D4AF37]" />
             <span>3D Live Try-On</span>
@@ -273,10 +286,10 @@ export const ProductDetailModal: React.FC = () => {
 
           <button
             onClick={handleLaunchLensCustomizer}
-            className="flex-1 py-3 px-4 bg-stone-950 hover:bg-stone-800 text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
+            className="w-full sm:w-auto flex-1 py-3 px-4 bg-[#D4AF37] hover:bg-[#c59e2b] text-stone-950 font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xs cursor-pointer transition-all"
           >
-            <Layers className="w-4 h-4 text-[#D4AF37]" />
-            <span>Configure & Buy</span>
+            <Layers className="w-4 h-4 text-stone-950" />
+            <span>+ Custom Lenses</span>
           </button>
         </div>
       </div>
