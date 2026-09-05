@@ -1,0 +1,390 @@
+import { Product } from '../types';
+
+export const PRODUCTS: Product[] = [
+  {
+    id: 'aman-titan-01',
+    name: 'Aman AeroTitanium Hexa-Air',
+    brand: 'Aman Titanium Pro',
+    category: 'spectacles',
+    gender: 'unisex',
+    price: 3499,
+    originalPrice: 5999,
+    rating: 4.9,
+    reviewsCount: 142,
+    frameShape: 'Hexagonal',
+    frameMaterial: 'Titanium',
+    frameType: 'Full Rim',
+    weightGrams: 11,
+    size: 'Medium',
+    dimensions: { lensWidth: 51, bridgeWidth: 19, templeLength: 145 },
+    colors: [
+      { name: 'Matte Gunmetal', hex: '#4A5568', frameImg: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'hexagonal' },
+      { name: 'Champagne Gold', hex: '#D4AF37', frameImg: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'hexagonal' },
+      { name: 'Obsidian Black', hex: '#1A202C', frameImg: 'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'hexagonal' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Ultra-featherweight aerospace Japanese titanium frame crafted for 16-hour daily screen and office comfort. Zero pressure on the nasal bridge.',
+    features: ['Aerospace Grade Pure Titanium', 'Corrosion & Sweat Proof', 'Memory Flex Hinge System', 'Ultra-light 11 grams'],
+    bestForFaceShapes: ['Oval', 'Round', 'Heart'],
+    inStock: true,
+    isBestSeller: true,
+    isNewArrival: false,
+    tag: 'Bestseller'
+  },
+  {
+    id: 'aman-sun-aviator-02',
+    name: 'Aman SkyMaster Aviator Polarized',
+    brand: 'Aman Signature',
+    category: 'sunglasses',
+    gender: 'men',
+    price: 2999,
+    originalPrice: 4899,
+    rating: 4.8,
+    reviewsCount: 98,
+    frameShape: 'Aviator',
+    frameMaterial: 'Stainless Steel',
+    frameType: 'Full Rim',
+    weightGrams: 18,
+    size: 'Wide',
+    dimensions: { lensWidth: 58, bridgeWidth: 14, templeLength: 140 },
+    colors: [
+      { name: 'Pilot Gold & Emerald Green', hex: '#2E7D32', frameImg: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'aviator' },
+      { name: 'Stealth Matte Black & Smoke', hex: '#1F2937', frameImg: 'https://images.unsplash.com/photo-1577803645773-f96470509666?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'aviator' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1577803645773-f96470509666?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Timeless military pilot aviator with high-definition polarized sun lenses that eliminate road reflection and 100% harmful UV rays.',
+    features: ['99.9% Glare Polarized Lenses', 'Dual-Bridge Architectural Reinforcement', 'Comfort Silicon Air-Cushion Pads', 'Scratch Resistant UV400'],
+    bestForFaceShapes: ['Square', 'Heart', 'Oval'],
+    inStock: true,
+    isBestSeller: true,
+    isNewArrival: false,
+    tag: 'Classic'
+  },
+  {
+    id: 'aman-acetate-round-03',
+    name: 'Aman Milanese Hand-Polished Round',
+    brand: 'Aman Heritage',
+    category: 'spectacles',
+    gender: 'unisex',
+    price: 3299,
+    originalPrice: 5200,
+    rating: 4.9,
+    reviewsCount: 114,
+    frameShape: 'Round',
+    frameMaterial: 'Italian Acetate',
+    frameType: 'Full Rim',
+    weightGrams: 16,
+    size: 'Medium',
+    dimensions: { lensWidth: 49, bridgeWidth: 20, templeLength: 145 },
+    colors: [
+      { name: 'Havana Tortoiseshell', hex: '#8B5A2B', frameImg: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'round' },
+      { name: 'Crystal Clear Champagne', hex: '#E2E8F0', frameImg: 'https://images.unsplash.com/photo-1509695503495-7ddc40751c6b?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'round' },
+      { name: 'Midnight Onyx', hex: '#111827', frameImg: 'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'round' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1509695503495-7ddc40751c6b?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Artisan-carved Mazzucchelli acetate frame with iconic keyhole bridge. Imbues academic sophistication and modern creative elegance.',
+    features: ['Organic Cellulose Italian Acetate', '5-Barrel Heavy Duty Hinge', 'Keyhole Ergonomic Nose Bridge', 'Rich Gloss Lustre'],
+    bestForFaceShapes: ['Square', 'Oval', 'Oblong', 'Diamond'],
+    inStock: true,
+    isBestSeller: false,
+    isNewArrival: true,
+    tag: 'Trending'
+  },
+  {
+    id: 'aman-bluecut-tr90-04',
+    name: 'Aman ByteShield Pro Computer Glasses',
+    brand: 'Aman Signature',
+    category: 'computer_bluecut',
+    gender: 'unisex',
+    price: 1999,
+    originalPrice: 3499,
+    rating: 4.9,
+    reviewsCount: 260,
+    frameShape: 'Wayfarer',
+    frameMaterial: 'TR-90 Flexible',
+    frameType: 'Full Rim',
+    weightGrams: 12,
+    size: 'Medium',
+    dimensions: { lensWidth: 53, bridgeWidth: 17, templeLength: 142 },
+    colors: [
+      { name: 'Matte Deep Navy', hex: '#1E3A8A', frameImg: 'https://images.unsplash.com/photo-1582142306909-195724d33ffc?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'wayfarer' },
+      { name: 'Frosted Graphite', hex: '#374151', frameImg: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'wayfarer' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1582142306909-195724d33ffc?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Engineered specifically for coders, designers, and remote workers. Eliminates eye fatigue, headaches, and blurry vision caused by monitor glare.',
+    features: ['TR90 Swiss Thermoplastic Flexibility', 'Zero Pinching at Temples', 'BlueBlock 420nm Filter Pre-Installed', 'Scratch Resistant Hydrophobic'],
+    bestForFaceShapes: ['Round', 'Oval', 'Heart'],
+    inStock: true,
+    isBestSeller: true,
+    isNewArrival: false,
+    tag: 'Work From Home'
+  },
+  {
+    id: 'aman-cateye-paris-05',
+    name: 'Aman Parisian Luxe Cat-Eye',
+    brand: 'Aman Heritage',
+    category: 'spectacles',
+    gender: 'women',
+    price: 3699,
+    originalPrice: 5800,
+    rating: 4.9,
+    reviewsCount: 89,
+    frameShape: 'Cat-Eye',
+    frameMaterial: 'Italian Acetate',
+    frameType: 'Full Rim',
+    weightGrams: 15,
+    size: 'Medium',
+    dimensions: { lensWidth: 52, bridgeWidth: 16, templeLength: 140 },
+    colors: [
+      { name: 'Rose Gold Amber Tortoise', hex: '#B45309', frameImg: 'https://images.unsplash.com/photo-1509695503495-7ddc40751c6b?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'cateye' },
+      { name: 'Gloss Wine Red', hex: '#991B1B', frameImg: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'cateye' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1509695503495-7ddc40751c6b?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Sculptural flared cat-eye silhouettes that visually lift the cheekbones and flatter feminine facial contours with effortless glamour.',
+    features: ['Faceted Wingtips', '18K Gold Plated Core Wire', 'Hypoallergenic Skin-Friendly', 'Prescription & Blue-cut compatible'],
+    bestForFaceShapes: ['Round', 'Square', 'Oval', 'Heart'],
+    inStock: true,
+    isBestSeller: false,
+    isNewArrival: true,
+    tag: 'Fashion Icon'
+  },
+  {
+    id: 'aman-clubmaster-browline-06',
+    name: 'Aman Prestige Clubmaster Browline',
+    brand: 'Aman Signature',
+    category: 'spectacles',
+    gender: 'men',
+    price: 3199,
+    originalPrice: 4999,
+    rating: 4.8,
+    reviewsCount: 76,
+    frameShape: 'Browline',
+    frameMaterial: 'Stainless Steel',
+    frameType: 'Half Rim',
+    weightGrams: 17,
+    size: 'Medium',
+    dimensions: { lensWidth: 51, bridgeWidth: 21, templeLength: 145 },
+    colors: [
+      { name: 'Ebony & Brushed Gold', hex: '#B45309', frameImg: 'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'browline' },
+      { name: 'Dark Tortoise & Silver', hex: '#4B5563', frameImg: 'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'browline' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Distinguished 1950s executive silhouette with bold acetate browline and precision wire undercarriage. A staple of leadership and refinement.',
+    features: ['Laser-Etched Metal Bridge', 'Reinforced Rivet Construction', 'Adjustable Ergonomic Nose Pads', 'Ideal for High Power Lenses'],
+    bestForFaceShapes: ['Oval', 'Round', 'Diamond'],
+    inStock: true,
+    isBestSeller: false,
+    isNewArrival: false,
+    tag: 'Executive'
+  },
+  {
+    id: 'aman-rimless-air-07',
+    name: 'Aman ZeroGravity Rimless Titanium',
+    brand: 'Aman Titanium Pro',
+    category: 'reading',
+    gender: 'unisex',
+    price: 4199,
+    originalPrice: 6999,
+    rating: 4.9,
+    reviewsCount: 54,
+    frameShape: 'Rectangle',
+    frameMaterial: 'Titanium',
+    frameType: 'Rimless',
+    weightGrams: 8,
+    size: 'Narrow',
+    dimensions: { lensWidth: 52, bridgeWidth: 18, templeLength: 140 },
+    colors: [
+      { name: 'Satin Silver', hex: '#94A3B8', frameImg: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'rectangle' },
+      { name: 'Rose Titanium', hex: '#FB7185', frameImg: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'rectangle' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Weighing merely 8 grams, this frameless rimless masterpiece offers completely unobstructed peripheral vision with screwless hinge technology.',
+    features: ['Only 8 grams total weight', 'Screwless Compression Mounts', 'Beta-Memory Titanium Temples', 'Nearly Invisible Profile'],
+    bestForFaceShapes: ['Oval', 'Heart', 'Square', 'Oblong'],
+    inStock: true,
+    isBestSeller: false,
+    isNewArrival: false,
+    tag: 'Ultra Light'
+  },
+  {
+    id: 'aman-sports-wrap-08',
+    name: 'Aman Velocity AeroWrap Performance',
+    brand: 'Aman SportX',
+    category: 'sports',
+    gender: 'unisex',
+    price: 3499,
+    originalPrice: 5499,
+    rating: 4.8,
+    reviewsCount: 65,
+    frameShape: 'Rectangle',
+    frameMaterial: 'TR-90 Flexible',
+    frameType: 'Full Rim',
+    weightGrams: 22,
+    size: 'Wide',
+    dimensions: { lensWidth: 64, bridgeWidth: 16, templeLength: 135 },
+    colors: [
+      { name: 'Neon Electric Blue & Polarized Mirror', hex: '#2563EB', frameImg: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'rectangle' },
+      { name: 'Stealth Carbon Black', hex: '#111827', frameImg: 'https://images.unsplash.com/photo-1577803645773-f96470509666?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'rectangle' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1577803645773-f96470509666?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Curved wrap-around aerodynamic frame for cycling, running, golf, and cricket. Anti-slip rubber grips hold firm during high sweat and rapid motion.',
+    features: ['Hydrophilic Non-Slip Rubber Nose & Ear Grips', 'Ventilated Anti-Fog Top Ports', 'High-Impact Polycarbonate Lenses', 'Panoramic Wind Shielding'],
+    bestForFaceShapes: ['Square', 'Oval', 'Round'],
+    inStock: true,
+    isBestSeller: false,
+    isNewArrival: true,
+    tag: 'Athletics'
+  },
+  {
+    id: 'aman-kids-flex-09',
+    name: 'Aman Junior Unbreakable FlexiShield',
+    brand: 'Aman Signature',
+    category: 'kids',
+    gender: 'kids',
+    price: 1699,
+    originalPrice: 2899,
+    rating: 5.0,
+    reviewsCount: 92,
+    frameShape: 'Round',
+    frameMaterial: 'TR-90 Flexible',
+    frameType: 'Full Rim',
+    weightGrams: 10,
+    size: 'Narrow',
+    dimensions: { lensWidth: 44, bridgeWidth: 15, templeLength: 125 },
+    colors: [
+      { name: 'Sky Blue & Lime Green', hex: '#0EA5E9', frameImg: 'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'round' },
+      { name: 'Berry Pink & Purple', hex: '#EC4899', frameImg: 'https://images.unsplash.com/photo-1509695503495-7ddc40751c6b?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'round' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1508296695146-257a814070b4?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: '100% BPA-Free food grade rubberized frame that bends 360 degrees without snapping. Built for active school kids with anti-blue ray lenses.',
+    features: ['180° Twist & Bendable Memory TR90', 'Includes Elastic Headband Strap', 'BPA-Free & Non-Toxic', 'Impact Shield Lenses'],
+    bestForFaceShapes: ['Round', 'Oval', 'Heart'],
+    inStock: true,
+    isBestSeller: true,
+    isNewArrival: false,
+    tag: 'Kid-Proof'
+  },
+  {
+    id: 'aman-sun-riviera-wayfarer-10',
+    name: 'Aman Riviera Polarized Vintage Wayfarer',
+    brand: 'Aman Heritage',
+    category: 'sunglasses',
+    gender: 'unisex',
+    price: 3499,
+    originalPrice: 5499,
+    rating: 4.9,
+    reviewsCount: 112,
+    frameShape: 'Wayfarer',
+    frameMaterial: 'Italian Acetate',
+    frameType: 'Full Rim',
+    weightGrams: 19,
+    size: 'Medium',
+    dimensions: { lensWidth: 54, bridgeWidth: 18, templeLength: 145 },
+    colors: [
+      { name: 'Amber Havana & Mineral Green', hex: '#78350F', frameImg: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'wayfarer' },
+      { name: 'Gloss Jet Black & Charcoal', hex: '#18181B', frameImg: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'wayfarer' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Iconic Riviera Mediterranean wayfarer sunglasses with mineral glass polarized lenses providing 100% UV400 suppression and crystal optical clarity.',
+    features: ['Tri-Acetate Cellulose (TAC) Polarized', 'Hand-Chamfered Riveted Temples', 'Anti-Reflective Backside Lens Coating', 'Case & Microfiber Included'],
+    bestForFaceShapes: ['Round', 'Oval', 'Heart'],
+    inStock: true,
+    isBestSeller: true,
+    isNewArrival: true,
+    tag: 'Trending Sun'
+  },
+  {
+    id: 'aman-sun-montecarlo-cateye-11',
+    name: 'Aman Monte Carlo Glamour Cat-Eye Sun',
+    brand: 'Aman Signature',
+    category: 'sunglasses',
+    gender: 'women',
+    price: 3799,
+    originalPrice: 6200,
+    rating: 4.9,
+    reviewsCount: 84,
+    frameShape: 'Cat-Eye',
+    frameMaterial: 'Italian Acetate',
+    frameType: 'Full Rim',
+    weightGrams: 20,
+    size: 'Medium',
+    dimensions: { lensWidth: 55, bridgeWidth: 17, templeLength: 140 },
+    colors: [
+      { name: 'Rich Tortoise & Warm Bronze', hex: '#92400E', frameImg: 'https://images.unsplash.com/photo-1509695503495-7ddc40751c6b?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'cateye' },
+      { name: 'Onyx Midnight & Gradient Smoke', hex: '#0F172A', frameImg: 'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'cateye' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1509695503495-7ddc40751c6b?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'High-fashion dramatic cat-eye sunglasses with gradient UV protection lenses. Designed to make a stunning impression while shielding eyes from intense sunlight.',
+    features: ['Gradient Category 3 Sun Filters', 'Sculpted Organic Acetate Silhouette', '100% UVA/UVB/UVC Blocking', 'Scratch-Guard Diamond Coat'],
+    bestForFaceShapes: ['Square', 'Oval', 'Heart', 'Diamond'],
+    inStock: true,
+    isBestSeller: true,
+    isNewArrival: false,
+    tag: 'Celebrity Choice'
+  },
+  {
+    id: 'aman-sun-gold-hexa-12',
+    name: 'Aman Solis Hexagonal Gold Polarized',
+    brand: 'Aman Titanium Pro',
+    category: 'sunglasses',
+    gender: 'unisex',
+    price: 3999,
+    originalPrice: 6500,
+    rating: 4.8,
+    reviewsCount: 67,
+    frameShape: 'Hexagonal',
+    frameMaterial: 'Titanium',
+    frameType: 'Full Rim',
+    weightGrams: 13,
+    size: 'Medium',
+    dimensions: { lensWidth: 52, bridgeWidth: 20, templeLength: 145 },
+    colors: [
+      { name: '24K Brushed Gold & Amber Sun', hex: '#D4AF37', frameImg: 'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'hexagonal' },
+      { name: 'Platinum Silver & Mirror Blue', hex: '#64748B', frameImg: 'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=800&auto=format&fit=crop&q=80', overlaySvgType: 'hexagonal' }
+    ],
+    images: [
+      'https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80',
+      'https://images.unsplash.com/photo-1591076482161-42ce6da69f67?w=800&auto=format&fit=crop&q=80'
+    ],
+    description: 'Geometric Japanese titanium sunglasses with warm amber polarized lenses. Ultra-crisp contrast enhancement for driving and bright outdoor sunlight.',
+    features: ['Pure Beta-Titanium Architecture', 'Color-Enhancing HD Polarized Tint', 'Adjustable Silicone Cushion Pads', 'Corrosion Proof Marine Grade'],
+    bestForFaceShapes: ['Oval', 'Round', 'Heart'],
+    inStock: true,
+    isBestSeller: false,
+    isNewArrival: true,
+    tag: 'Limited Edition'
+  }
+];

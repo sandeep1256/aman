@@ -1,0 +1,6 @@
+{
+  "name": "Aman Opticles",
+  "description": "Mobile-first spectacles & sunglasses store with live Virtual Try-On AR, AI optical stylist, cloud database integration, user authentication, catalog management, and order tracking.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

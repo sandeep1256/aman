@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Aman Opticles Database Schema",
+  "description": "Firestore database blueprint for Aman Opticles eyewear store",
+  "entities": {
+    "users": {
+      "title": "Users",
+      "description": "User profile records",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["customer", "admin"] },
+        "membershipTier": { "type": "string" },
+        "rewardPoints": { "type": "number" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "email", "displayName", "role", "createdAt"]
+    },
+    "products": {
+      "title": "Products",
+      "description": "Eyewear and sunglasses catalog items",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "brand": { "type": "string" },
+        "category": { "type": "string", "enum": ["sunglasses", "spectacles", "computer_bluecut", "reading", "kids", "sports"] },
+        "gender": { "type": "string", "enum": ["men", "women", "unisex", "kids"] },
+        "price": { "type": "number" },
+        "originalPrice": { "type": "number" },
+        "rating": { "type": "number" },
+        "reviewsCount": { "type": "number" },
+        "frameShape": { "type": "string" },
+        "frameMaterial": { "type": "string" },
+        "frameType": { "type": "string" },
+        "weightGrams": { "type": "number" },
+        "size": { "type": "string" },
+        "dimensions": { "type": "object" },
+        "colors": { "type": "array" },
+        "images": { "type": "array" },
+        "description": { "type": "string" },
+        "features": { "type": "array" },
+        "bestForFaceShapes": { "type": "array" },
+        "inStock": { "type": "boolean" },
+        "isBestSeller": { "type": "boolean" },
+        "isNewArrival": { "type": "boolean" },
+        "tag": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "name", "category", "price", "frameShape", "inStock"]
+    },
+    "categories": {
+      "title": "Categories",
+      "description": "Eyewear catalog categories",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "slug": { "type": "string" },
+        "description": { "type": "string" },
+        "itemCount": { "type": "number" },
+        "imageUrl": { "type": "string" }
+      },
+      "required": ["id", "name", "slug"]
+    },
+    "orders": {
+      "title": "Orders",
+      "description": "Customer purchase orders",
+      "type": "object",
+      "properties": {
+        "orderId": { "type": "string" },
+        "userId": { "type": "string" },
+        "date": { "type": "string" },
+        "items": { "type": "array" },
+        "shippingAddress": { "type": "object" },
+        "paymentMethod": { "type": "string" },
+        "paymentStatus": { "type": "string" },
+        "paymentDetails": { "type": "object" },
+        "subtotal": { "type": "number" },
+        "discount": { "type": "number" },
+        "shipping": { "type": "number" },
+        "tax": { "type": "number" },
+        "total": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string" },
+        "timeline": { "type": "array" },
+        "trackingNumber": { "type": "string" },
+        "courierPartner": { "type": "string" },
+        "estimatedDelivery": { "type": "string" }
+      },
+      "required": ["orderId", "items", "shippingAddress", "total", "status"]
+    },
+    "prescriptions": {
+      "title": "Prescriptions",
+      "description": "User saved optical prescriptions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "savedName": { "type": "string" },
+        "type": { "type": "string" },
+        "rightEye": { "type": "object" },
+        "leftEye": { "type": "object" },
+        "pd": { "type": "number" },
+        "doctorName": { "type": "string" },
+        "date": { "type": "string" }
+      },
+      "required": ["savedName", "rightEye", "leftEye", "pd"]
+    }
+  }
+}
