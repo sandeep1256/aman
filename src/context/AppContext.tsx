@@ -161,18 +161,6 @@ const LOCAL_STORAGE_KEYS = {
   PRODUCTS_CACHE: 'aman_opticles_products_cache'
 };
 
-const DEFAULT_DEMO_USER: UserAccount = {
-  uid: 'aman-demo-user-01',
-  email: 'client@amanopticles.com',
-  displayName: 'Aarav Sharma',
-  phone: '+91 98765 43210',
-  membershipTier: 'Platinum',
-  rewardPoints: 1250,
-  role: 'customer',
-  createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
-  isAnonymous: false
-};
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     return (localStorage.getItem(LOCAL_STORAGE_KEYS.LANG) as Language) || 'en';
@@ -182,13 +170,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return (localStorage.getItem(LOCAL_STORAGE_KEYS.CURRENCY) as Currency) || 'INR';
   });
 
-  // User State
+  // User State - Defaults to null (no auto-login). User must explicitly Login / Register.
   const [user, setUser] = useState<UserAccount | null>(() => {
     try {
       const cached = localStorage.getItem(LOCAL_STORAGE_KEYS.USER_CACHE);
-      return cached ? JSON.parse(cached) : DEFAULT_DEMO_USER;
+      if (!cached) return null;
+      const parsed = JSON.parse(cached);
+      // Clean up old hardcoded demo user so user is NOT auto-logged in
+      if (parsed?.uid === 'aman-demo-user-01' || parsed?.email === 'client@amanopticles.com') {
+        localStorage.removeItem(LOCAL_STORAGE_KEYS.USER_CACHE);
+        return null;
+      }
+      return parsed;
     } catch {
-      return DEFAULT_DEMO_USER;
+      return null;
     }
   });
 
@@ -581,7 +576,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addNotification('👋 Guest Session Active', 'Browsing as Guest Connoisseur. You can save lookbooks and place orders!', 'info');
     } catch (err) {
       console.warn('Guest login note:', err);
-      setUser(DEFAULT_DEMO_USER);
+      const guestFallback: UserAccount = {
+        uid: `guest-${Date.now()}`,
+        email: 'guest@amanopticles.com',
+        displayName: 'Guest Patron',
+        membershipTier: 'Silver',
+        rewardPoints: 0,
+        role: 'customer',
+        createdAt: new Date().toISOString(),
+        isAnonymous: true
+      };
+      setUser(guestFallback);
       setAuthModalOpen(false);
     }
   };

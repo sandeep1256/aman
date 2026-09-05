@@ -124,6 +124,40 @@ export const AuthModal: React.FC = () => {
           </div>
         </div>
 
+        {/* Auth Mode Tabs (Login / Register) */}
+        <div className="flex border-b border-stone-200 bg-[#FAF8F5]">
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('login');
+              setErrorMsg(null);
+              setSuccessMsg(null);
+            }}
+            className={`flex-1 py-3 text-xs font-mono font-bold uppercase tracking-wider text-center border-b-2 transition-colors cursor-pointer ${
+              authMode === 'login'
+                ? 'border-stone-950 text-stone-950 bg-white shadow-xs'
+                : 'border-transparent text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            Sign In / Log In
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAuthMode('signup');
+              setErrorMsg(null);
+              setSuccessMsg(null);
+            }}
+            className={`flex-1 py-3 text-xs font-mono font-bold uppercase tracking-wider text-center border-b-2 transition-colors cursor-pointer ${
+              authMode === 'signup'
+                ? 'border-stone-950 text-stone-950 bg-white shadow-xs'
+                : 'border-transparent text-stone-500 hover:text-stone-900'
+            }`}
+          >
+            Register / Sign Up
+          </button>
+        </div>
+
         {/* Form Body */}
         <div className="p-6 sm:p-7 space-y-4">
           {errorMsg && (
