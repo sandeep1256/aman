@@ -223,3 +223,43 @@ export interface CategoryInfo {
   itemCount?: number;
   highlightShapes: FrameShape[];
 }
+
+export interface GmbReview {
+  id: string;
+  author: string;
+  authorPhotoUrl?: string;
+  rating: number;
+  date: string;
+  comment: string;
+  source: string;
+  verified: boolean;
+  userLocation?: string;
+  likes?: number;
+  createdAt?: string;
+  ownerReply?: {
+    date: string;
+    comment: string;
+  };
+}
+
+export interface GmbProfileData {
+  businessName: string;
+  tagline: string;
+  category: string;
+  rating: number;
+  totalReviews: number;
+  isOpenNow: boolean;
+  timingText: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  phone: string;
+  formattedPhone: string;
+  shareUrl: string;
+  mapsSearchUrl: string;
+  latitude: number;
+  longitude: number;
+  highlights: string[];
+}
+

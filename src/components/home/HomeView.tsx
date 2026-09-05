@@ -20,6 +20,7 @@ import { PRODUCTS } from '../../data/products';
 import { FaceShape, ProductCategory } from '../../types';
 import { formatPrice } from '../../data/currencies';
 import { PanIndiaDeliveryMap } from './PanIndiaDeliveryMap';
+import { GoogleBusinessProfileSection } from './GoogleBusinessProfileSection';
 
 export const HomeView: React.FC = () => {
   const { 
@@ -431,7 +432,10 @@ export const HomeView: React.FC = () => {
         </div>
       </section>
 
-      {/* 5. PAN-INDIA RUNNING VECTOR DELIVERY MAP (All India Courier Logistics) */}
+      {/* 5. OFFICIAL GOOGLE BUSINESS PROFILE (GMB) LIVE PREVIEW & REVIEWS SYNC */}
+      <GoogleBusinessProfileSection />
+
+      {/* 6. PAN-INDIA RUNNING VECTOR DELIVERY MAP (All India Courier Logistics) */}
       <PanIndiaDeliveryMap />
 
       {/* 6. HERITAGE & CRAFTSMANSHIP BANNER */}

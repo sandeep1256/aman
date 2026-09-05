@@ -110,6 +110,41 @@
         "date": { "type": "string" }
       },
       "required": ["savedName", "rightEye", "leftEye", "pd"]
+    },
+    "reviews": {
+      "title": "Reviews",
+      "description": "Google Business Profile verified patron reviews and ratings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "author": { "type": "string" },
+        "authorPhotoUrl": { "type": "string" },
+        "rating": { "type": "number" },
+        "date": { "type": "string" },
+        "comment": { "type": "string" },
+        "source": { "type": "string" },
+        "verified": { "type": "boolean" },
+        "userLocation": { "type": "string" },
+        "likes": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["author", "rating", "comment", "source"]
+    },
+    "gmb_profile": {
+      "title": "Google Business Profile",
+      "description": "Synced metadata and business attributes from Google My Business",
+      "type": "object",
+      "properties": {
+        "businessName": { "type": "string" },
+        "category": { "type": "string" },
+        "rating": { "type": "number" },
+        "totalReviews": { "type": "number" },
+        "address": { "type": "string" },
+        "phone": { "type": "string" },
+        "shareUrl": { "type": "string" },
+        "lastSyncedAt": { "type": "string" }
+      },
+      "required": ["businessName", "rating", "address", "phone"]
     }
   }
 }

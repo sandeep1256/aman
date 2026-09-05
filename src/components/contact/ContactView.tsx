@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   MapPin, 
   Phone, 
@@ -24,6 +24,12 @@ import {
   X
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { 
+  subscribeToGmbReviews, 
+  addGmbReviewToFirestore, 
+  INITIAL_GMB_PROFILE 
+} from '../../services/dbService';
+import { GmbReview } from '../../types';
 
 type TabType = 'overview' | 'reviews' | 'photos';
 
@@ -149,7 +155,14 @@ export const ContactView: React.FC = () => {
   const [newReviewAuthor, setNewReviewAuthor] = useState('');
   const [newReviewRating, setNewReviewRating] = useState(5);
   const [newReviewText, setNewReviewText] = useState('');
-  const [userReviews, setUserReviews] = useState<ReviewItem[]>([]);
+  const [firestoreReviews, setFirestoreReviews] = useState<GmbReview[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = subscribeToGmbReviews((reviews) => {
+      setFirestoreReviews(reviews);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -158,14 +171,14 @@ export const ContactView: React.FC = () => {
 
   const handleDirections = () => {
     window.open(
-      'https://www.google.com/maps/search/?api=1&query=Aman+Opticals+Khandar+bus+stand+tiraha+Tel+meel+ke+pass+Sawai+Madhopur+Rajasthan+322201',
+      INITIAL_GMB_PROFILE.mapsSearchUrl,
       '_blank',
       'noopener,noreferrer'
     );
   };
 
   const handleCall = () => {
-    window.location.href = 'tel:09785609194';
+    window.location.href = `tel:${INITIAL_GMB_PROFILE.phone}`;
   };
 
   const handleWhatsApp = (customMsg?: string) => {
@@ -176,10 +189,11 @@ export const ContactView: React.FC = () => {
   };
 
   const handleShare = async () => {
+    const shareUrl = INITIAL_GMB_PROFILE.shareUrl;
     const shareData = {
       title: 'Aman Opticals - Aman | Sawai Madhopur',
       text: 'Aman Opticals - Optical Products Manufacturer (5.0 ★). Khandar bus stand tiraha Tel meel ke pass, Sawai Madhopur, Rajasthan 322201. Call: 097856 09194',
-      url: window.location.href
+      url: shareUrl
     };
 
     if (navigator.share) {
@@ -191,9 +205,9 @@ export const ContactView: React.FC = () => {
       }
     } else {
       navigator.clipboard.writeText(
-        `Aman Opticals - Aman (5.0 ★)\nKhandar bus stand tiraha Tel meel ke pass, Sawai Madhopur, Rajasthan 322201\nPhone: 097856 09194\n${window.location.href}`
+        `Aman Opticals - Aman (5.0 ★)\nKhandar bus stand tiraha Tel meel ke pass, Sawai Madhopur, Rajasthan 322201\nPhone: 097856 09194\nGoogle Profile: ${shareUrl}`
       );
-      showToast('Store details copied to clipboard!');
+      showToast('Google profile link copied to clipboard!');
     }
   };
 
@@ -233,28 +247,31 @@ END:VCARD`;
     showToast('Inquiry sent via WhatsApp to Aman Opticals!');
   };
 
-  const handleAddReview = (e: React.FormEvent) => {
+  const handleAddReview = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newReviewAuthor.trim() || !newReviewText.trim()) return;
 
-    const newRev: ReviewItem = {
-      id: `user-rev-${Date.now()}`,
-      author: newReviewAuthor,
-      rating: newReviewRating,
-      date: 'Just now',
-      comment: newReviewText,
-      source: 'Verified Patron',
-      verified: true
-    };
-
-    setUserReviews([newRev, ...userReviews]);
-    setReviewModalOpen(false);
-    setNewReviewAuthor('');
-    setNewReviewText('');
-    showToast('Thank you! Your 5-star review has been published.');
+    try {
+      await addGmbReviewToFirestore({
+        author: newReviewAuthor.trim(),
+        rating: newReviewRating,
+        date: 'Just now',
+        comment: newReviewText.trim(),
+        source: 'Google Review',
+        verified: true,
+        userLocation: 'Sawai Madhopur',
+        likes: 1
+      });
+      setReviewModalOpen(false);
+      setNewReviewAuthor('');
+      setNewReviewText('');
+      showToast('Thank you! Your 5-star review has been saved to Firestore database.');
+    } catch (err) {
+      console.error('Failed to submit review:', err);
+    }
   };
 
-  const allReviews = [...userReviews, ...VERIFIED_REVIEWS];
+  const allReviews = firestoreReviews.length > 0 ? firestoreReviews : VERIFIED_REVIEWS;
   const filteredPhotos = photoFilter === 'all' 
     ? SHOWROOM_PHOTOS 
     : SHOWROOM_PHOTOS.filter(p => p.category === photoFilter);

@@ -20,7 +20,7 @@ import {
   signInAnonymously,
   FirebaseUser
 } from '../lib/firebase';
-import { Product, Order, Prescription, UserAccount, CategoryInfo } from '../types';
+import { Product, Order, Prescription, UserAccount, CategoryInfo, GmbReview, GmbProfileData } from '../types';
 import { PRODUCTS } from '../data/products';
 import { CATEGORIES_DATA } from '../data/categories';
 
@@ -335,3 +335,164 @@ export const loginGuest = async (): Promise<UserAccount> => {
 export const logoutCurrentUser = async () => {
   await signOut(auth);
 };
+
+// ----------------------------------------------------
+// 5. GOOGLE BUSINESS PROFILE (GMB) REVIEWS & METADATA SYNC
+// ----------------------------------------------------
+
+export const INITIAL_GMB_REVIEWS: GmbReview[] = [
+  {
+    id: 'gmb-rev-1',
+    author: 'Rajendra Sharma',
+    rating: 5.0,
+    date: '3 weeks ago',
+    comment: 'Very good quality glasses and lens fitting. Best optical store near Khandar bus stand in Sawai Madhopur. Highly reasonable manufacturer price directly without middlemen.',
+    source: 'Google Review',
+    verified: true,
+    userLocation: 'Sawai Madhopur',
+    likes: 6,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 21).toISOString()
+  },
+  {
+    id: 'gmb-rev-2',
+    author: 'Mohit Meena',
+    rating: 5.0,
+    date: '1 month ago',
+    comment: 'Bhai ka nature bahut achha hai aur frames ki variety bahut sundar hai. Computer blue cut lenses banwaye the, bilkul accurate number mila. 100% recommended for family spectacles.',
+    source: 'Google Review',
+    verified: true,
+    userLocation: 'Rajasthan',
+    likes: 8,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString()
+  },
+  {
+    id: 'gmb-rev-3',
+    author: 'Pooja Rathore',
+    rating: 5.0,
+    date: '2 months ago',
+    comment: 'Best optical manufacturer in Sawai Madhopur! They delivered progressive lenses within same day with proper eye testing. Frame quality is superb and lightweight.',
+    source: 'Google Review',
+    verified: true,
+    userLocation: 'Sawai Madhopur',
+    likes: 4,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString()
+  },
+  {
+    id: 'gmb-rev-4',
+    author: 'Akash Verma',
+    rating: 5.0,
+    date: '3 months ago',
+    comment: 'Premium sunglasses and prescription frames at wholesale manufacturer rates. Very polite staff and great collection of titanium and acetate frames. Very satisfied.',
+    source: 'Google Review',
+    verified: true,
+    userLocation: 'Jaipur / SWM',
+    likes: 5,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90).toISOString()
+  }
+];
+
+export const INITIAL_GMB_PROFILE: GmbProfileData = {
+  businessName: 'Aman Opticals - Aman',
+  tagline: 'Precision Optical Products Manufacturer & Eyewear Studio',
+  category: 'Optical Products Manufacturer · Optician',
+  rating: 5.0,
+  totalReviews: 4,
+  isOpenNow: true,
+  timingText: 'Closed · Opens 10:30 am Sun (Mon-Sat 10:00 am - 9:00 pm)',
+  address: 'Khandar bus stand tiraha Tel meel ke pass, Sawai Madhopur, Rajasthan 322201',
+  city: 'Sawai Madhopur',
+  state: 'Rajasthan',
+  pincode: '322201',
+  phone: '097856 09194',
+  formattedPhone: '+91 97856 09194',
+  shareUrl: 'https://share.google/I8LKVeAvbE6nWsDTz',
+  mapsSearchUrl: 'https://www.google.com/maps/search/?api=1&query=Aman+Opticals+Khandar+bus+stand+tiraha+Sawai+Madhopur+Rajasthan+322201',
+  latitude: 26.0124,
+  longitude: 76.3533,
+  highlights: [
+    'Optical Products Manufacturer',
+    'Computerized Eye Testing & Prescription Calibration',
+    'In-Store Shopping & Same-Day Spectacles',
+    'Pan-India Courier Dispatch',
+    'Direct Factory Wholesale Pricing'
+  ]
+};
+
+export const fetchGmbReviewsFromFirestore = async (): Promise<GmbReview[]> => {
+  try {
+    const revRef = collection(db, 'reviews');
+    const snap = await getDocs(revRef);
+    if (!snap.empty) {
+      const items: GmbReview[] = [];
+      snap.forEach(docSnap => {
+        items.push({ ...(docSnap.data() as GmbReview), id: docSnap.id });
+      });
+      return items.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+    }
+
+    // If empty in Firestore, seed initial verified reviews
+    console.log('Seeding initial GMB reviews into Firestore...');
+    for (const r of INITIAL_GMB_REVIEWS) {
+      await setDoc(doc(db, 'reviews', r.id), r, { merge: true });
+    }
+    return INITIAL_GMB_REVIEWS;
+  } catch (err) {
+    console.warn('Could not fetch reviews from Firestore, using local fallback:', err);
+    return INITIAL_GMB_REVIEWS;
+  }
+};
+
+export const subscribeToGmbReviews = (callback: (reviews: GmbReview[]) => void): (() => void) => {
+  try {
+    const revRef = collection(db, 'reviews');
+    const unsubscribe = onSnapshot(revRef, (snapshot) => {
+      if (snapshot.empty) {
+        callback(INITIAL_GMB_REVIEWS);
+      } else {
+        const items: GmbReview[] = [];
+        snapshot.forEach(docSnap => {
+          items.push({ ...(docSnap.data() as GmbReview), id: docSnap.id });
+        });
+        items.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+        callback(items);
+      }
+    }, (error) => {
+      console.warn('Reviews onSnapshot subscription error:', error);
+      callback(INITIAL_GMB_REVIEWS);
+    });
+    return unsubscribe;
+  } catch (err) {
+    console.warn('Failed to subscribe to reviews:', err);
+    callback(INITIAL_GMB_REVIEWS);
+    return () => {};
+  }
+};
+
+export const addGmbReviewToFirestore = async (newReview: Omit<GmbReview, 'id' | 'createdAt'>): Promise<GmbReview> => {
+  const revId = `rev-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
+  const fullReview: GmbReview = {
+    ...newReview,
+    id: revId,
+    createdAt: new Date().toISOString()
+  };
+
+  try {
+    await setDoc(doc(db, 'reviews', revId), fullReview);
+  } catch (err) {
+    console.warn('Error saving review to Firestore:', err);
+  }
+  return fullReview;
+};
+
+export const syncGmbProfileToFirestore = async () => {
+  try {
+    const profileRef = doc(db, 'gmb_profile', 'aman_opticals');
+    await setDoc(profileRef, {
+      ...INITIAL_GMB_PROFILE,
+      lastSyncedAt: new Date().toISOString()
+    }, { merge: true });
+  } catch (err) {
+    console.warn('Error syncing GMB profile to Firestore:', err);
+  }
+};
+

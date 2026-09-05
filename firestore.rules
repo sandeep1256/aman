@@ -44,5 +44,18 @@ service cloud.firestore {
     match /snapshots/{snapshotId} {
       allow read, write: if true;
     }
+
+    // Google Business Reviews & Testimonials
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create, update: if true;
+      allow delete: if isAuthenticated();
+    }
+
+    // Google Business Profile Sync Info
+    match /gmb_profile/{docId} {
+      allow read: if true;
+      allow write: if true;
+    }
   }
 }
